@@ -19,7 +19,7 @@ R0 = eye(3); wb0 = [0;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
 X_rnd = []; 
-t_span = 0:0.01:2;
+t_span = 0:0.1:10;
 for i=1:n
     % get control
     U = U_rnd(i,:)';
@@ -55,14 +55,10 @@ end
 
 %% get A B matrices
 % Z2 = AZ1 + BU = [A B]*Z1_aug => Z2 = K*Z1_aug
+
 Z1 = Zn(:,1:end-1);
 U1 = U(:,1:end-1);
 Z1_aug = [Z1; U1];
 Z2 = Zn(:,2:end);
-
-EDMD.K = Z2*pinv(Z1_aug);
-EDMD.A = EDMD.K(:,1:size(Z1,1));
-EDMD.B = EDMD.K(:,size(Z1,1)+1:end);
-EDMD.Z = Zn;
-EDMD.U = U;
+K = Z2*pinv(Z1_aug);
 
