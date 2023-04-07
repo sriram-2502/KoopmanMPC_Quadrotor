@@ -24,7 +24,7 @@ wb = reshape(X(16:18),[3,1]); % ang vel in body frame
 
 % control inputs U = [Fb Mb]'
 Fb = U(1); % net force in body frame
-Mb = reshape(U(2:4),[3,1]); % Moments in body frame
+Mb = reshape(X(16:18),[3,1]); % Moments in body frame
 
 %% dynamics
 ddx = 1/mass * Fb * e3 - g*R'*e3; % net accleration
