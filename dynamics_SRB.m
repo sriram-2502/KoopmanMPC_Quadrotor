@@ -28,8 +28,8 @@ Mb = reshape(U(2:4),[3,1]); % Moments in body frame
 
 %% dynamics
 ddx = 1/mass * Fb * e3 - g*R'*e3; % net accleration
-dR = R * hatMap(wb); % update Rotation matrix
-dwb = J \ (Mb - hatMap(wb) * J * wb);
+dR = R * hat_map(wb); % update Rotation matrix
+dwb = J \ (Mb - hat_map(wb) * J * wb);
 
 %% return states
 dXdt = [dx;ddx;dR(:);dwb];
