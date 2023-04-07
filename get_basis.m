@@ -10,7 +10,9 @@ R = reshape(X(7:15),[3,3]);
 wb = reshape(X(16:18),[3,1]);
 wb_hat = hat_map(wb);
 
-%% build observables (add as necessary)
+%% build observables [R';z1,z1;...]
+% zn = R*w_hat^n
+basis = [];
 Z = R;
 for i = 1:n
     Z = Z*wb_hat;

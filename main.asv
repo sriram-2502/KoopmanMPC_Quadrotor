@@ -1,7 +1,10 @@
 clc; clear; close all;
 
 params = get_params();
-EDMD = get_EDMD();
+
+%% get EDMD matrices
+n_basis = 1;
+EDMD = get_EDMD(n_basis);
 A = EDMD.A;
 B = EDMD.B;
 Z = EDMD.Z;
