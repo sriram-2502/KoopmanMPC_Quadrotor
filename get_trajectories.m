@@ -1,10 +1,11 @@
-function [X, U] = get_trajectories(n_control,t_traj)
+function [X, U] = get_trajectories(X0, n_control,t_traj, show_plot)
 % function to random trajectories
 % Inputs
+% X0                : initial condition
 % n_control         : number of random control inputs
 % t_traj            : trajectory length for each control input 
 % outputs
-% X                 : random trajectories generated with constant control input for
+% X                 : random trajectories generated with constant control for
 % each trajectory
 % size of X         : 18 * (n_control x len(t_traj))
 % U                 : random control inputs for each trajectory
@@ -24,18 +25,21 @@ U_rnd = mvnrnd(mu,Sigma,n_control);
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
 % initial condition is from rest (from ground)
-x0 = [0;0;0]; dx0 = [0;0;0];
-R0 = eye(3); wb0 = [0;0;0];
-X0 = [x0;dx0;R0(:);wb0];
-
 X = []; 
 t_span = t_traj;
+
 for i=1:n_control
     % get control
     U = U_rnd(i,:)';
 
-    % simulate Ode
+    % simulate ode
     [t,x] = ode45(@(t,X)dynamics_SRB(t,X,U,params),t_span,X0);
+    
+    if(show_plot)
+        figure(1)
+        plot3(x(:,1),x(:,2),x(:,3)); hold on;
+        grid on; axis square
+    end
 
     % collect data
     X = [X,x']; % [X(t1), X(t2), ..., X(tn)] stacked for each control input n

@@ -7,8 +7,6 @@ function EDMD = get_EDMD(X, U, n_basis)
 % Outputs
 % EDMD.Z        : Lifted states 
 % size of Z     : (15+9*n_basis) x (n x m)
-% EDMD.U        : control inputs corresponding Z 
-% size of U     : 4 x (n x m))
 % EDMD.K        : Augmented K matrix where K = [A B]
 % size of K     : (15+9*n_basis) x (n x m)
 % EDMD.A        : Lifted A matrix
@@ -38,5 +36,4 @@ EDMD.K = Z2*pinv(Z1_aug);
 EDMD.A = EDMD.K(:,1:size(Z1,1));
 EDMD.B = EDMD.K(:,size(Z1,1)+1:end);
 EDMD.Z = Z;
-EDMD.U = U;
 
