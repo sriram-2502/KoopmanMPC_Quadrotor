@@ -12,13 +12,13 @@ x0 = [0;0;0]; dx0 = [0;0;0];
 R0 = eye(3); wb0 = [0;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
-n_control = 1000; % number of random controls to apply
+n_control = 100; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
 show_plot = true;
 [X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 5;
+n_basis = 1;
 EDMD = get_EDMD(X, U, n_basis);
 A = EDMD.A;
 B = EDMD.B;
@@ -39,8 +39,8 @@ t_traj = 0:dt:t_span; % traj length to simulate (s)
 u = U(:,1); % get first input since input in constant along each traj
 
 % get z0
-basis = get_basis(X(:,1),n_basis);
-z0 = [X(1:3,1); X(4:6,1); basis];
+basis = get_basis(X0,n_basis);
+z0 = [X0(1:3); X0(4:6); basis];
 
 % propagate z0 for prediction
 n_prediction = 100; % 10 timesteps
@@ -65,18 +65,22 @@ Z2_mse_prediction = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z_true(:).^2))
 
 %% plots
 figure(2)
+sz = 50;
 subplot(2,2,1)
-plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:)); hold on
+scatter3(Z_true(1,1), Z_true(2,1), Z_true(3,1),sz,'kx'); hold on
+plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:),'b'); hold on
 plot3(Z_pred(1,:), Z_pred(2,:), Z_pred(3,:), 'r--'); hold on
 grid on; axis square;
-legend('true','predicted')
+legend('initial','true','predicted')
 
 subplot(2,2,2)
-plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:)); hold on
+scatter3(Z_true(1,1), Z_true(2,1), Z_true(3,1),sz,'kx'); hold on
+plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:),'b'); hold on
 grid on; axis square;
-legend('true')
+legend('initial','true')
 
 subplot(2,2,4)
+scatter3(Z_pred(1,1), Z_pred(2,1), Z_pred(3,1),sz,'kx'); hold on
 plot3(Z_pred(1,:), Z_pred(2,:), Z_pred(3,:), 'r--'); hold on
 grid on; axis square
-legend('predicted')
+legend('initial','predicted')

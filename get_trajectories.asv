@@ -16,22 +16,18 @@ params = get_params();
 
 %% generate random inputs for U
 % generate n random inputs for 4 thrusters
-net_weight = params.mass*params.g;
+net_weight = params.mass*params.g/4;
 
 % use multivariate random nomral distribution since inputs are correlated
-mu = [10;10;10;10]; % ensures flight
-Sigma = diag([1;1;1;1]);
-U_rnd = mvnrnd(mu,Sigma,n_control);
+% mu = [net_weight;net_weight;net_weight;net_weight]; % ensures flight
+% Sigma = diag([100;100;100;100]);
+% U_rnd = mvnrnd(mu,Sigma,n_control);
 
 % get U as uniform random distribution
-% a = 10; b = 20;
-% U_rnd = a + (b-a).*rand(n_control,4);
-
-% add the net weight of the robot to ensure it flies up 
+a = 10; b = 20;
+U_rnd = a + (b-a).*rand(n_control,4);
 U_rnd(:,1) = U_rnd(:,1) + net_weight;
-
-% straight line traj
-U_rnd(:,2:end) = 0;
+U_rnd(:,2:end) = 0; % set zero moments to get straight line traj
 
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
