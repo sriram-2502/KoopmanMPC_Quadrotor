@@ -1,9 +1,12 @@
 clc; clear; close all;
+seed = 10;
+rng(seed);
 
 %% get robot parameters
 params = get_params();
 dt = 1e-2;
 t_span = 1; % in (s)
+
 %% generate random data
 % generate random data starting from same initial condition
 % each traj is generated using contant control input
@@ -18,25 +21,24 @@ show_plot = true;
 [X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 1;
+n_basis = 0;
 EDMD = get_EDMD(X, U, n_basis);
 A = EDMD.A;
 B = EDMD.B;
 Z = EDMD.Z;
 
-%% check prediction on the same distrubution as || Z2 - (AZ1 + BU1) ||_mse
+%% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z1 = Z(:,1:end-1);
 U1 = U(:,1:end-1);
 Z2 = Z(:,2:end);
 Z2_predicted = A*Z1 + B*U1;
 Z2_error = Z2 - Z2_predicted;
-Z2_mse = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z2(:).^2))
+Z2_mse_training = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z2(:).^2))
 
 %% check prediction on new control input
 n_control = 1; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
 [X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
-u = U(:,1); % get first input since input in constant along each traj
 
 % get z0
 basis = get_basis(X0,n_basis);
@@ -46,7 +48,7 @@ z0 = [X0(1:3); X0(4:6); basis];
 n_prediction = 100; % 10 timesteps
 z = z0; Z_pred = [z0]; % add initial
 for i = 1:n_prediction
-    z_next = A*z + B*u;
+    z_next = A*z + B*U(:,i);
     z = z_next;
     Z_pred = [Z_pred,z];
 end
