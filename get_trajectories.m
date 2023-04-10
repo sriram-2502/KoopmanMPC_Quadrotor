@@ -1,4 +1,4 @@
-function [X, U] = get_trajectories(X0, n_control,t_traj, show_plot)
+function [X, U, X1, X2, U1, U2] = get_trajectories(X0, n_control,t_traj, show_plot)
 % function to random trajectories
 % Inputs
 % X0                : initial condition
@@ -31,12 +31,12 @@ U_rnd = mvnrnd(mu,Sigma,n_control);
 U_rnd(:,1) = U_rnd(:,1) + net_weight;
 
 % straight line traj
-U_rnd(:,2:end) = 0;
+% U_rnd(:,2:end) = 0;
 
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
 % initial condition is from rest (from ground)
-X = []; 
+X = []; X1=[]; X2=[];
 t_span = t_traj;
 
 for i=1:n_control
@@ -55,10 +55,16 @@ for i=1:n_control
 
     % collect data
     X = [X,x']; % [X(t1), X(t2), ..., X(tn)] stacked for each control input n
+
+    % seperate data into snapshots
+    X1 = [X1,x(1:end-1,:)'];
+    X2 = [X2,x(2:end,:)'];
 end
 
 % stack U as constant along each trajectory for n control inputs
-U = [];
+U = [];U1 = []; U2=[];
 for i = 1:n_control    
     U = [U, repmat(U_rnd(i,:)',1,length(t_span))];
+    U1 = [U1,repmat(U_rnd(i,:)',1,length(t_span)-1)];
+    U2 = [U2,repmat(U_rnd(i,:)',1,length(t_span)-1)];
 end

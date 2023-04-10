@@ -1,9 +1,8 @@
-function EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj)
+function EDMD = get_EDMD(X1,  U, n_basis, t_traj)
 % function to generate A B matrices using EDMD
 % Inputs
-% X1            : state trajecotries of n traj of length 1:m-1
-% X2            : state trajecotries of n traj of length 2:m
-% U1            : random control inputs for n traj of length 1:m-1 
+% X             : state trajecotries of n traj of length m
+% U             : random control inputs of 
 % n_basis       : Number of basis used to generate EDMD
 % t_traj        : vector of timestamps for each trajectory
 % Outputs
@@ -17,32 +16,32 @@ function EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj)
 % size of B     : (15+9*n_basis) x m
 
 %% generate basis from data
-Z1 = []; Z2 = [];
+Z = []; 
 % collect basis for n control inputs 
 % Zn = [Zt_1; Zt_2; ... Zt_n]
-for i = 1:length(X1)
-    x1 = X1(:,i); x2 = X2(:,i);
-    basis1 = get_basis(x1,n_basis);
-    basis2 = get_basis(x2,n_basis);
-    z1 = [x1(1:3); x1(4:6); basis1];
-    z2 = [x2(1:3); x2(4:6); basis2];
-    Z1 = [Z1, z1]; Z2 = [Z2, z2];
+for i = 1:length(X)
+    x = X(:,i);
+    basis = get_basis(x,n_basis);
+    z = [x(1:3); x(4:6); basis];
+    Z = [Z, z];
 end
 
 %% get A B matrices
 % Z2 = AZ1 + BU = [A B]*Z1_aug => Z2 = K*Z1_aug
+Z1 = Z(:,1:end-1);
+U1 = U(:,1:end-1);
 Z1_aug = [Z1; U1];
+Z2 = Z(:,2:end);
 
 % EDMD using least squares 
 % reference: https://www.sciencedirect.com/science/article/pii/S0167278919306086
 % S Klaus (2019) Data driven approx of the Koopman Generator
-m = size(Z1,2); % avg over number of data points
+m = size(Z,2); % avg over number of data points
 A = (Z2*Z1_aug')./m;
 G = (Z1_aug*Z1_aug')./m;
 
 EDMD.K = A*pinv(G);
 EDMD.A = EDMD.K(:,1:size(Z1,1));
 EDMD.B = EDMD.K(:,size(Z1,1)+1:end);
-EDMD.Z1 = Z1;
-EDMD.Z2 = Z2;
+EDMD.Z = Z;
 

@@ -1,11 +1,11 @@
 clc; clear; close all;
-seed = 10;
-rng(seed);
+% seed = 10;
+% rng(seed);
 
 %% get robot parameters
 params = get_params();
-dt = 1e-2;
-t_span = 1; % in (s)
+dt = 1e-3;
+t_span = 0.1; % in (s)
 
 %% generate random data
 % generate random data starting from same initial condition
@@ -18,19 +18,17 @@ X0 = [x0;dx0;R0(:);wb0];
 n_control = 100; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
 show_plot = true;
-[X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
+[X, U, X1, X2, U1, U2] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 0;
-EDMD = get_EDMD(X, U, n_basis);
+n_basis = 1;
+EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
-Z = EDMD.Z;
+Z1 = EDMD.Z1;
+Z2 = EDMD.Z2;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
-Z1 = Z(:,1:end-1);
-U1 = U(:,1:end-1);
-Z2 = Z(:,2:end);
 Z2_predicted = A*Z1 + B*U1;
 Z2_error = Z2 - Z2_predicted;
 Z2_mse_training = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z2(:).^2))
@@ -38,7 +36,7 @@ Z2_mse_training = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z2(:).^2))
 %% check prediction on new control input
 n_control = 1; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
-[X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
+[X, U, X1, X2] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 % get z0
 basis = get_basis(X0,n_basis);
