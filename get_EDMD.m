@@ -32,7 +32,14 @@ U1 = U(:,1:end-1);
 Z1_aug = [Z1; U1];
 Z2 = Z(:,2:end);
 
-EDMD.K = Z2*pinv(Z1_aug);
+% EDMD using least squares 
+% reference: https://www.sciencedirect.com/science/article/pii/S0167278919306086
+% S Klaus (2019) Data driven approx of the Koopman Generator
+m = size(Z,2); % avg over number of data points
+A = (Z2*Z1_aug')./m;
+G = (Z1_aug*Z1_aug')./m;
+
+EDMD.K = A*pinv(G);
 EDMD.A = EDMD.K(:,1:size(Z1,1));
 EDMD.B = EDMD.K(:,size(Z1,1)+1:end);
 EDMD.Z = Z;

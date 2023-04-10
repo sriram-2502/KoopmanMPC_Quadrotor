@@ -16,14 +16,16 @@ params = get_params();
 
 %% generate random inputs for U
 % generate n random inputs for 4 thrusters
-% use multivariate random nomral distribution since inputs are correlated
 net_weight = params.mass*params.g/4;
-mu = [net_weight;net_weight;net_weight;net_weight]; % ensures flight
-Sigma = diag([100;100;100;100]);
-U_rnd = mvnrnd(mu,Sigma,n_control);
+
+% use multivariate random nomral distribution since inputs are correlated
+% mu = [net_weight;net_weight;net_weight;net_weight]; % ensures flight
+% Sigma = diag([100;100;100;100]);
+% U_rnd = mvnrnd(mu,Sigma,n_control);
 
 % get U as uniform random distribution
-%U_rnd = rand(n_control,4);
+U_rnd = rand(n_control,4);
+U_rnd(:,1) = U_rnd(:,1) + 5*net_weight;
 
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
