@@ -22,6 +22,9 @@ mu = [net_weight;net_weight;net_weight;net_weight]; % ensures flight
 Sigma = diag([100;100;100;100]);
 U_rnd = mvnrnd(mu,Sigma,n_control);
 
+% get U as uniform random distribution
+%U_rnd = rand(n_control,4);
+
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
 % initial condition is from rest (from ground)
@@ -39,6 +42,7 @@ for i=1:n_control
         figure(1)
         plot3(x(:,1),x(:,2),x(:,3)); hold on;
         grid on; axis square
+        title('training trajectories for EDMD')
     end
 
     % collect data

@@ -34,7 +34,7 @@ Z2_mse = sqrt(mean(Z2_error(:).^2))
 %% check prediction on new control input
 
 n_control = 1; % number of random controls to apply
-t_traj = 0:1e-3:0.1; % traj length to simulate (s)
+t_traj = 0:dt:1; % traj length to simulate (s)
 [X, U] = get_trajectories(X0,n_control,t_traj,show_plot);
 u = U(:,1); % get first input since input in constant along each traj
 
@@ -64,8 +64,18 @@ Z2_error = Z_true - Z_pred;
 Z2_mse_prediction = sqrt(mean(Z2_error(:).^2))
 
 figure(2)
+subplot(2,2,1)
 plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:)); hold on
-plot3(Z_pred(1,:), Z_pred(2,:), Z_pred(3,:), '--'); hold on
+plot3(Z_pred(1,:), Z_pred(2,:), Z_pred(3,:), 'r--'); hold on
+grid on; axis square;
 legend('true','predicted')
-grid on;
-axis square
+
+subplot(2,2,2)
+plot3(Z_true(1,:), Z_true(2,:), Z_true(3,:)); hold on
+grid on; axis square;
+legend('true')
+
+subplot(2,2,4)
+plot3(Z_pred(1,:), Z_pred(2,:), Z_pred(3,:), 'r--'); hold on
+grid on; axis square
+legend('predicted')
