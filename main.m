@@ -1,6 +1,6 @@
 clc; clear; close all;
-% seed = 10;
-% rng(seed);
+seed = 1;
+rng(seed);
 
 %% get robot parameters
 params = get_params();
@@ -21,7 +21,7 @@ show_plot = true;
 [X, U, X1, X2, U1, U2] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 1;
+n_basis = 5;
 EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
@@ -30,8 +30,8 @@ Z2 = EDMD.Z2;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z2_predicted = A*Z1 + B*U1;
-Z2_error = Z2 - Z2_predicted;
-Z2_mse_training = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z2(:).^2))
+Z2_error = Z2(:) - Z2_predicted(:);
+Z2_mse_training = sqrt(mean(Z2_error.^2))/sqrt(mean(Z2(:).^2))
 
 %% check prediction on new control input
 n_control = 1; % number of random controls to apply
@@ -60,8 +60,8 @@ for i = 1:n_prediction+1 % compare n+1 timesteps
     Z_true = [Z_true,z];
 end
 
-Z2_error = Z_true - Z_pred;
-Z2_mse_prediction = sqrt(mean(Z2_error(:).^2))/sqrt(mean(Z_true(:).^2))
+Z2_error = Z_true(:) - Z_pred(:);
+Z2_mse_prediction = sqrt(mean(Z2_error.^2))/sqrt(mean(Z_true(:).^2))
 
 %% plots
 figure(2)
