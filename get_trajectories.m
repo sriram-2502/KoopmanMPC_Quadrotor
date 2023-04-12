@@ -31,7 +31,7 @@ U_rnd = mvnrnd(mu,Sigma,n_control);
 U_rnd(:,1) = U_rnd(:,1) + net_weight;
 
 % straight line traj
-% U_rnd(:,2:end) = 0;
+%U_rnd(:,2:end) = 0;
 
 %% simulate random inputs for 50s to get trajectories
 % states X = [x dx R wb]'
@@ -48,8 +48,15 @@ for i=1:n_control
     
     if(show_plot)
         figure(1)
+        subplot(6,3,[1,4])
         plot3(x(:,1),x(:,2),x(:,3)); hold on;
         grid on; axis square
+        grid on; box on; axis square;
+        xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
+        ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
+        zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
+        axes = gca; set(axes,'FontSize',15);
+        axes.LineWidth=2;
         title('training trajectories for EDMD')
     end
 

@@ -1,38 +1,10 @@
-clc; clear; close all;
-seed = 1;
-rng(seed);
-
-%% get robot parameters
-params = get_params();
-dt = 1e-3;
-t_span = 0.1; % in (s)
-
-%% generate random data
-% generate random data starting from same initial condition
-% each traj is generated using contant control input
-% generate random control inputs to get different trajectories
-x0 = [0;0;0]; dx0 = [0;0;0];
-R0 = eye(3); wb0 = [0;0;0];
-X0 = [x0;dx0;R0(:);wb0];
-
-n_control = 100; % number of random controls to apply
-t_traj = 0:dt:t_span; % traj length to simulate (s)
-show_plot = true;
-[X, U, X1, X2, U1, U2] = get_trajectories(X0,n_control,t_traj,show_plot);
-
+function eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot)
 %% get EDMD matrices
-n_basis = 1;
-EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
 C = EDMD.C;
 Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
-
-%% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
-Z2_predicted = A*Z1 + B*U1;
-Z2_error = Z2(:) - Z2_predicted(:);
-Z2_mse_training = sqrt(mean(Z2_error.^2))/sqrt(mean(Z2(:).^2))
 
 %% check prediction on new control input
 n_control = 1; % number of random controls to apply
@@ -86,7 +58,7 @@ for i = 1:length(t_pred)
 
     x_pred = [x_pred, X_pred(1:3,i)];
     dx_pred = [dx_pred, X_pred(4:6,i)];
-    R_pred = reshape(X_pred(7:15,i)',[3,3]); %todo make R positive in EDMD
+    R_pred = reshape(X_pred(7:15,i)',[3,3]); %todo make R positive def in EDMD
     theta_pred = [theta_pred, vee_map(logm(R_pred))];
     wb_hat_pred = reshape(X_pred(16:24,i),[3,3]);
     wb_pred = [wb_pred, vee_map(wb_hat_pred)];
@@ -94,62 +66,107 @@ end
 
 
 %% plots
-figure(2)
-sz = 50;
-subplot(6,3,[1,4])
+figure(1); hold on;
+subplot(6,3,[10,13])
 %scatter3(Z_true(1,1), Z_true(2,1), Z_true(3,1),sz,'kx'); hold on
 plot3(x_true(1,:), x_true(2,:), x_true(3,:)); hold on
 plot3(x_pred(1,:), x_pred(2,:), x_pred(3,:), '--'); hold on
-grid on; axis square;
-legend('true','predicted')
+grid on; box on; axis square;
+xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
+ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
+zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+axes.LineWidth=2;
+lgd = legend('true','predicted');
+lgd.Location = 'north';
+lgd.NumColumns = 2;
 
 %linear states
 subplot(6,3,2)
 plot(t_traj, x_true(1,:)); hold on;
-plot(t_traj, x_pred(1,:),'--'); hold on; grid on;
+plot(t_traj, x_pred(1,:),'--'); hold on;
+axes = gca;
+set(axes,'FontSize',15);
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$x$','FontSize',20, 'Interpreter','latex')
+box on; axes.LineWidth=2;
 
 subplot(6,3,5)
 plot(t_traj, x_true(2,:)); hold on; 
-plot(t_traj, x_pred(2,:),'--'); hold on; grid on;
+plot(t_traj, x_pred(2,:),'--'); hold on;
+ylabel('$y$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,8)
 plot(t_traj, x_true(3,:)); hold on;
-plot(t_traj, x_pred(3,:),'--'); hold on; grid on;
+plot(t_traj, x_pred(3,:),'--'); hold on;
+ylabel('$z$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,11)
 plot(t_traj, dx_true(1,:)); hold on;
-plot(t_traj, dx_pred(1,:),'--'); hold on; grid on;
+plot(t_traj, dx_pred(1,:),'--'); hold on;
+ylabel('$v_x$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,14)
 plot(t_traj, dx_true(2,:)); hold on;
-plot(t_traj, dx_pred(2,:),'--'); hold on; grid on;
+plot(t_traj, dx_pred(2,:),'--'); hold on;
+ylabel('$v_y$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,17)
 plot(t_traj, dx_true(3,:)); hold on; 
-plot(t_traj, dx_pred(3,:),'--'); hold on; grid on;
+plot(t_traj, dx_pred(3,:),'--'); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$v_z$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 %angular states
 subplot(6,3,3)
 plot(t_traj, theta_true(1,:)); hold on; 
-plot(t_traj, theta_pred(1,:),'--'); hold on; grid on;
+plot(t_traj, theta_pred(1,:),'--'); hold on;
+ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,6)
 plot(t_traj, theta_true(2,:)); hold on; 
-plot(t_traj, theta_pred(2,:),'--'); hold on; grid on;
+plot(t_traj, theta_pred(2,:),'--'); hold on;
+ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,9)
 plot(t_traj, theta_true(3,:)); hold on; 
-plot(t_traj, theta_pred(3,:),'--'); hold on; grid on;
+plot(t_traj, theta_pred(3,:),'--'); hold on;
+ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,12)
 plot(t_traj, wb_true(1,:)); hold on;
-plot(t_traj, wb_pred(1,:),'--'); hold on; grid on;
+plot(t_traj, wb_pred(1,:),'--'); hold on;
+ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,15)
 plot(t_traj, wb_true(2,:)); hold on;
-plot(t_traj, wb_pred(2,:),'--'); hold on; grid on;
+plot(t_traj, wb_pred(2,:),'--'); hold on;
+ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
 
 subplot(6,3,18)
 plot(t_traj, wb_true(3,:)); hold on;
-plot(t_traj, wb_pred(3,:),'--'); hold on; grid on;
-
+plot(t_traj, wb_pred(3,:),'--'); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;

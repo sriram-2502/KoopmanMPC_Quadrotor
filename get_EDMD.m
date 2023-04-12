@@ -40,9 +40,14 @@ m = size(Z1,2); % avg over number of data points
 A = (Z2*Z1_aug')./m;
 G = (Z1_aug*Z1_aug')./m;
 
+% mapping matrix X = CZ 
+C = zeros(size(Z1,1)); 
+C(1:25,1:25)=eye(25); 
+
 EDMD.K = A*pinv(G);
 EDMD.A = EDMD.K(:,1:size(Z1,1));
 EDMD.B = EDMD.K(:,size(Z1,1)+1:end);
+EDMD.C = C;
 EDMD.Z1 = Z1;
 EDMD.Z2 = Z2;
 

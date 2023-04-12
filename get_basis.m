@@ -18,4 +18,4 @@ for i = 1:n
     Z = Z*wb_hat;
     basis = [basis; vectorize(Z)];
 end
-basis = [vectorize(R'); basis];
+basis = [vectorize(R'); vectorize(wb_hat'); basis];
