@@ -28,8 +28,8 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
     A = EDMD.A;
     B = EDMD.B;
     C = EDMD.C;
-    sys=ss(A,B,C,0);
-    [A, B, C] = ssdata(c2d(sys,dT)); %discretize A
+    %sys=ss(A,B,C,0);
+    %[A, B, C] = ssdata(c2d(sys,dT)); %discretize A
     n = size(A,2); % state dimension columns (n x n)
 
     %% get current and desired states
@@ -54,11 +54,11 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
     X_ref = [x_ref;dx_ref;theta_ref;wb_ref];
 
     %% define costs 
-    Qx = 1e6*eye(3);
-    Qv = 1e6*eye(3);
-    Qa = 1e6*eye(3);
-    Qw = 1e6*eye(3);
-    Q_i = zeros(size(Z,1));
+    Qx = diag([1e6;1e6;1e6]);
+    Qv = diag([1e6;1e6;1e6]);
+    Qa = diag([1e6;1e6;1e6]);
+    Qw = diag([1e6;1e6;1e6]);
+    Q_i = 1e-1*eye(size(Z,1));
     Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
     P = Q_i; % terminal cost
     
@@ -80,7 +80,7 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
         %% Augmented Cost
         a = [zeros(i*n,n); eye(n); A_hat(1:end-i*n,:)];
         B_hat = [B_hat, a(n+1:end,:)*B];
-        R_i = 1e-1*eye(size(B,2));
+        R_i = 1e0*eye(size(B,2));
         R_hat = blkdiag(R_hat, R_i);
         
         %% Augmented inequality constraint
@@ -103,7 +103,8 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
     
     % Augmented cost: 1/2 * U^T * G * U + U^T * F
     G = 2*(R_hat + B_hat'*Q_hat*B_hat);
-    y = reshape(Z_ref,[],1);
+    y = Z_ref(:);
     F = 2*B_hat'*Q_hat*(A_hat*Z-y);
+    %F = 2*B_hat'*Q_hat*(A_hat*Z);
     
 end

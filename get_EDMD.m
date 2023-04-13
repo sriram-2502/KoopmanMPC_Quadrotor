@@ -41,8 +41,8 @@ A = (Z2*Z1_aug')./m;
 G = (Z1_aug*Z1_aug')./m;
 
 % mapping matrix X = CZ 
-C = zeros(25,size(Z1,1)); 
-C(1:25,1:25)=eye(25); 
+C = zeros(24,size(Z1,1)); 
+C(1:24,1:24)=eye(24); 
 
 EDMD.K = A*pinv(G);
 EDMD.A = EDMD.K(:,1:size(Z1,1));
