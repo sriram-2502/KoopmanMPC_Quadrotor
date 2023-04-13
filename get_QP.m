@@ -55,9 +55,9 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
 
     %% define costs 
     Qx = 1e6*eye(3);
-    Qv = 1e6*eye(3);
+    Qv = 1e1*eye(3);
     Qa = 1e6*eye(3);
-    Qw = 1e6*eye(3);
+    Qw = 1e1*eye(3);
     Q_i = zeros(size(Z,1));
     Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
     P = Q_i; % terminal cost
@@ -103,7 +103,7 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
     
     % Augmented cost: 1/2 * U^T * G * U + U^T * F
     G = 2*(R_hat + B_hat'*Q_hat*B_hat);
-    y = reshape(Z_ref(:,1:N),[],1);
+    y = reshape(Z_ref,[],1);
     F = 2*B_hat'*Q_hat*(A_hat*Z-y);
     
 end
