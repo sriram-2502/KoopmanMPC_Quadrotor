@@ -4,8 +4,6 @@ function dXdt = dynamics_SRB(t,X,U,params)
 % X         - states for SRB dynamics
 % U         - control inputs for SRB dynamics
 % params    - physical paramters
-% params.m  - mass of the robot
-% params.J  - inertial of the robot (world frame)
 %
 % Ouputs
 % dXdt      - future states based on SRB dynamics

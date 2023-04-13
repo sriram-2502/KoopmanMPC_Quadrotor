@@ -25,7 +25,7 @@ show_plot = false;
 [X, U, X1, X2, U1] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 1;
+n_basis = 3;
 EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
@@ -47,9 +47,9 @@ X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 % params.Tmpc = 1/50;
 % params.simTimeStep = 1/200;
 
-params.predHorizon = 4;
-params.Tmpc = 1e-3;
-params.simTimeStep = 1/1000;
+params.predHorizon = 5;
+params.Tmpc = 1e-2;
+params.simTimeStep = 1e-3;
 
 dt_sim = params.simTimeStep;
 N = params.predHorizon;
@@ -59,14 +59,14 @@ SimTimeDuration = 0.1;  % [sec]
 MAX_ITER = floor(SimTimeDuration/dt_sim);
 
 % get reference trajectory (desired)
-% n_control = 1; % number of random controls to apply
-% t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
-% show_plot = false;
-% [X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
+n_control = 1; % number of random controls to apply
+t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+show_plot = false;
+[X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 % get lifted states
 Z_ref = [];
-X_ref = X_eval(:,2:end);
+X_ref = X_ref(:,2:end);
 for i = 1:length(X_ref) % compare n+1 timesteps
     x_des = X_ref(:,i);
     basis = get_basis(x_des,n_basis);
@@ -75,19 +75,19 @@ for i = 1:length(X_ref) % compare n+1 timesteps
 end
 
 % get lift desired states for constant reference
-% Z_ref = []; Xf = [];
-% xf = [0.1;0.1;0.1]; dx0 = [0.1;0.1;0.1];
-% R0 = eye(3); wb0 = [0.1;0.1;0.1];
-% Xff = [xf;dx0;R0(:);wb0];
-% for i = 1:length(X_ref) % compare n+1 timesteps
+% Z_ref = []; Xf = []; 
+% xf = [0;0;0]; dxf = [0.1;0.1;0.1];
+% Rf = eye(3); wbf = [0;0;0];
+% Xff = [xf;dxf;Rf(:);wbf];
+% for i = 1:MAX_ITER+N % compare n+1 timesteps
 %     x_des = Xff;
 %     Xf = [Xf,x_des];
 %     basis = get_basis(x_des,n_basis);
 %     z = [x_des(1:3); x_des(4:6); basis];
 %     Z_ref = [Z_ref,z];
 % end
+% X_ref = Xf;
 
-% get lifted states at t=0
 basis = get_basis(X0,n_basis);
 Z0 = [X0(1:3); X0(4:6); basis];
 
@@ -97,7 +97,7 @@ tend = dt_sim;
 
 [tout,Xout,Uout,Xdout] = deal([]);
 
-% --- simulation ----
+%% --- simulation ----
 h_waitbar = waitbar(0,'Calculating...');
 tic
 Z = Z0;
@@ -107,7 +107,7 @@ for ii = 1:MAX_ITER
 
     %% --- MPC ----      
     %form QP using explicit matrices
-    
+    z_ref = Z_ref(:,ii:ii+N-1);
 
     if(use_casadi)
         [zval] = casadi_MPC(EDMD,Z,Z_ref,N,params);
@@ -118,18 +118,18 @@ for ii = 1:MAX_ITER
     end
 
     Ut = zval(1:4)
-    %Ut(1) = Ut(1) + params.mass*params.g; 
 
     %% --- simulate without any external disturbances ---
     %parse true states from lifted states
     Xt = C*Z;
     x = Xt(1:3); dx = Xt(4:6); 
-    R = reshape(Xt(7:15),[3,3]);
+    R = reshape(Xt(7:15),[3,3])';
     wb_hat = reshape(Xt(16:24),[3,3]); % body frame
-    wb = vee_map(wb_hat);
+    wb = vee_map(wb_hat');
     Xt = [x;dx;R(:);wb;];
 
-    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
+    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart:tend],Xt);
+    X(1:3)
     
     %% --- update ---
     Xt = X(end,:)';

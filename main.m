@@ -16,7 +16,7 @@ t_span = 0.1; % in (s)
 % each traj is generated using contant control input
 % generate random control inputs to get different trajectories
 x0 = [0;0;0]; dx0 = [0;0;0];
-R0 = eye(3); wb0 = [0;0;0];
+R0 = eye(3); wb0 = [0.1;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
 n_control = 100; % number of random controls to apply
@@ -47,7 +47,7 @@ X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 % params.Tmpc = 1/50;
 % params.simTimeStep = 1/200;
 
-params.predHorizon = 4;
+params.predHorizon = 5;
 params.Tmpc = 1e-2;
 params.simTimeStep = 1e-3;
 
@@ -55,18 +55,18 @@ dt_sim = params.simTimeStep;
 N = params.predHorizon;
 
 % simulation time
-SimTimeDuration = 0.09;  % [sec]
+SimTimeDuration = 0.1;  % [sec]
 MAX_ITER = floor(SimTimeDuration/dt_sim);
 
 % get reference trajectory (desired)
-% n_control = 1; % number of random controls to apply
-% t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
-% show_plot = false;
-% [X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
+n_control = 1; % number of random controls to apply
+t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+show_plot = false;
+[X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 % get lifted states
 Z_ref = [];
-X_ref = X_eval(:,2:end);
+X_ref = X_ref(:,2:end);
 for i = 1:length(X_ref) % compare n+1 timesteps
     x_des = X_ref(:,i);
     basis = get_basis(x_des,n_basis);
@@ -88,11 +88,6 @@ end
 % end
 % X_ref = Xf;
 
-% get lifted states at t=0
-% x0 = [0.5;0.2;0.1]; dx0 = [0.1;0.1;0.1];
-% R0 = eye(3); wb0 = [0;0;0];
-% X0 = [x0;dx0;R0(:);wb0];
-
 basis = get_basis(X0,n_basis);
 Z0 = [X0(1:3); X0(4:6); basis];
 
@@ -102,7 +97,7 @@ tend = dt_sim;
 
 [tout,Xout,Uout,Xdout] = deal([]);
 
-% --- simulation ----
+%% --- simulation ----
 h_waitbar = waitbar(0,'Calculating...');
 tic
 Z = Z0;
@@ -123,18 +118,18 @@ for ii = 1:MAX_ITER
     end
 
     Ut = zval(1:4)
-    %Ut(1) = Ut(1) + params.mass*params.g; 
 
     %% --- simulate without any external disturbances ---
     %parse true states from lifted states
     Xt = C*Z;
     x = Xt(1:3); dx = Xt(4:6); 
-    R = reshape(Xt(7:15),[3,3]);
+    R = reshape(Xt(7:15),[3,3])';
     wb_hat = reshape(Xt(16:24),[3,3]); % body frame
-    wb = vee_map(wb_hat);
+    wb = vee_map(wb_hat');
     Xt = [x;dx;R(:);wb;];
 
     [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
+    X(1:3)
     
     %% --- update ---
     Xt = X(end,:)';
