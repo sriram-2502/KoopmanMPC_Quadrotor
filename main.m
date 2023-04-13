@@ -63,18 +63,30 @@ t_traj = 0:dt_sim:N; % traj length to simulate (s)
 show_plot = false;
 [X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
 
-% get lift desired states
+% get lifted states
 Z_ref = []; Xf = [];
 xf = [0.1;0.1;0.1]; dx0 = [0.1;0.1;0.1];
 R0 = eye(3); wb0 = [0.1;0.1;0.1];
 Xff = [xf;dx0;R0(:);wb0];
 for i = 1:length(X_ref) % compare n+1 timesteps
-    x_des = Xff;
-    Xf = [Xf,x_des];
+    x_des = X_ref(:,i);
     basis = get_basis(x_des,n_basis);
     z = [x_des(1:3); x_des(4:6); basis];
     Z_ref = [Z_ref,z];
 end
+
+% get lift desired states for constant reference
+% Z_ref = []; Xf = [];
+% xf = [0.1;0.1;0.1]; dx0 = [0.1;0.1;0.1];
+% R0 = eye(3); wb0 = [0.1;0.1;0.1];
+% Xff = [xf;dx0;R0(:);wb0];
+% for i = 1:length(X_ref) % compare n+1 timesteps
+%     x_des = Xff;
+%     Xf = [Xf,x_des];
+%     basis = get_basis(x_des,n_basis);
+%     z = [x_des(1:3); x_des(4:6); basis];
+%     Z_ref = [Z_ref,z];
+% end
 
 % get lifted states at t=0
 basis = get_basis(X0,n_basis);
@@ -128,7 +140,7 @@ for ii = 1:MAX_ITER
     tout = [tout;t(2:end)];
     Xout = [Xout;X(2:end,:)];
     Uout = [Uout;repmat(Ut',[lent,1])];
-    Xdout = [Xdout;repmat(Xf(:,ii)',[lent,1])];
+    Xdout = [Xdout;repmat(X_ref(:,ii)',[lent,1])];
 
     %waitbar(ii/MAX_ITER,h_waitbar,'Calculating...');
 end
