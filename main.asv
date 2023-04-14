@@ -16,7 +16,7 @@ t_span = 0.1; % in (s)
 % each traj is generated using contant control input
 % generate random control inputs to get different trajectories
 x0 = [0;0;0]; dx0 = [0;0;0];
-R0 = eye(3); wb0 = [0;0;0];
+R0 = eye(3); wb0 = [0.1;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
 n_control = 100; % number of random controls to apply
@@ -95,7 +95,7 @@ Z0 = [X0(1:3); X0(4:6); basis];
 tstart = 0;
 tend = dt_sim;
 
-[tout,Xout,Uout,Xdout] = deal([]);
+[tout,X_MPC,U_MPC,Xout] = deal([]);
 
 %% --- simulation ----
 h_waitbar = waitbar(0,'Calculating...');
@@ -103,7 +103,7 @@ tic
 Z = Z0;
 for ii = 1:MAX_ITER
     % --- time vector ---
-    %t_ = dt_sim * (ii-1) + params.Tmpc * (0:N-1);
+    t_ = dt_sim * (ii-1) + params.Tmpc * (0:N-1);
 
     %% --- MPC ----      
     %form QP using explicit matrices
@@ -118,6 +118,7 @@ for ii = 1:MAX_ITER
     end
 
     Ut = zval(1:4)
+    U_MPC = [U_MPC,Ut];
 
     %% --- simulate without any external disturbances ---
     %parse true states from lifted states
@@ -128,7 +129,7 @@ for ii = 1:MAX_ITER
     wb = vee_map(wb_hat');
     Xt = [x;dx;R(:);wb;];
 
-    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart:tend],Xt);
+    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
     X(1:3)
     
     %% --- update ---
@@ -141,11 +142,8 @@ for ii = 1:MAX_ITER
     tend = tstart + dt_sim;
     
     %% --- log ---  
-    lent = length(t(2:end));
     tout = [tout;t(2:end)];
-    Xout = [Xout;X(2:end,:)];
-    Uout = [Uout;repmat(Ut',[lent,1])];
-    Xdout = [Xdout;repmat(X_ref(:,ii)',[lent,1])];
+    X_MPC = [X_MPC;X(2:end,:)];
 
     waitbar(ii/MAX_ITER,h_waitbar,'Calculating...');
 end
@@ -184,7 +182,7 @@ ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
 zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 axes.LineWidth=2;
-lgd = legend('true','predicted');
+lgd = legend('reference','MPC');
 lgd.Location = 'north';
 lgd.NumColumns = 2;
 

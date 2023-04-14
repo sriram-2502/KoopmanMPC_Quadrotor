@@ -18,13 +18,15 @@ function params = get_params()
 % reference - Geometric Tracking Control of a Quadrotor UAV on SE(3)
 m = 4.34; % kg
 J = diag([0.0820, 0.0845, 0.1377]);
-db = 0.315; % distance between the com and rotors
-c_torque = 8.004e-4; % torque constrant
+
+% db = 0.315; % distance between the com and rotors
+% c_torque = 8.004e-4; % torque constrant
+
 g = 9.81; % gravity
 
 params.mass = m;
 params.J = J;
-params.d = db;
-params.c_troque = c_torque;
+%params.d = db;
+%params.c_troque = c_torque;
 params.g = g;
 

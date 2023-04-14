@@ -25,9 +25,6 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
 A = EDMD.A;
 B = EDMD.B;
 C = EDMD.C;
-% sys=ss(A,B,C,0);
-% dT = params.Tmpc;
-% [A, B, C] = ssdata(c2d(sys,dT)); %discretize A
 n = size(A,2); % state dimension columns (n x n)
 
 %% get current and desired states
@@ -52,18 +49,16 @@ end
 X_ref = [x_ref;dx_ref;theta_ref;wb_ref];
 
 %% define costs 
-Qx = diag([1e1;1e1;1e1]);
-Qv = diag([1e1;1e1;1e1]);
-Qa = diag([1e2;1e2;1e2]);
-Qw = diag([1e2;1e2;1e2]);
-
-Q_i = 1e-6*eye(size(Z,1));
-Q_i = zeros(size(Z,1));
-Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
+Qx = diag([1e4;1e4;1e2]);
+Qv = diag([1e2;1e2;1e2]);
+Qa = 1e2*eye(9);
+Qw = 1e2*eye(9);
+Q_i = 0*eye(size(Z,1));
+Q_i(1:24,1:24) = blkdiag(Qx, Qv, Qa, Qw);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e-1;1e-2;1e-2;1e-2]);
+R_i = diag([1e-6;1e0;1e0;1e0]);
 
 %% Build QP Matrices
 A_hat = zeros(n*N,n);

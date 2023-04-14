@@ -2,7 +2,7 @@ clc; clear; close all;
 set(0,'DefaultLineLineWidth',2) %linewidh on plots
 set(0,'defaultfigurecolor',[1 1 1])
 seed = 1;
-rng(seed);
+%rng(seed);
 show_plot = true;
 use_casadi = false;
 
@@ -21,7 +21,7 @@ X0 = [x0;dx0;R0(:);wb0];
 
 n_control = 100; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
-show_plot = false;
+show_plot = true;
 [X, U, X1, X2, U1] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
@@ -47,20 +47,21 @@ X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 % params.Tmpc = 1/50;
 % params.simTimeStep = 1/200;
 
-params.predHorizon = 5;
-params.Tmpc = 1e-2;
+params.predHorizon = 15;
+%params.Tmpc = 1e-3;
 params.simTimeStep = 1e-3;
 
 dt_sim = params.simTimeStep;
 N = params.predHorizon;
 
 % simulation time
-SimTimeDuration = 0.1;  % [sec]
+SimTimeDuration = 0.2;  % [sec]
 MAX_ITER = floor(SimTimeDuration/dt_sim);
 
 % get reference trajectory (desired)
 n_control = 1; % number of random controls to apply
-t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+% t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+t_traj = 0:1e-3:10;
 show_plot = false;
 [X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
 
@@ -76,7 +77,7 @@ end
 
 % get lift desired states for constant reference
 % Z_ref = []; Xf = []; 
-% xf = [0;0;0]; dxf = [0.1;0.1;0.1];
+% xf = [0.38;-1.2;3.6]; dxf = [0;0;0];
 % Rf = eye(3); wbf = [0;0;0];
 % Xff = [xf;dxf;Rf(:);wbf];
 % for i = 1:MAX_ITER+N % compare n+1 timesteps
@@ -126,10 +127,8 @@ for ii = 1:MAX_ITER
     R = reshape(Xt(7:15),[3,3])';
     wb_hat = reshape(Xt(16:24),[3,3]); % body frame
     wb = vee_map(wb_hat');
-    Xt = [x;dx;R(:);wb;];
-
+    Xt = [x;dx;R(:);wb;];  
     [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
-    X(1:3)
     
     %% --- update ---
     Xt = X(end,:)';
@@ -184,7 +183,7 @@ ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
 zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 axes.LineWidth=2;
-lgd = legend('true','predicted');
+lgd = legend('reference','MPC');
 lgd.Location = 'north';
 lgd.NumColumns = 2;
 
