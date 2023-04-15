@@ -33,8 +33,9 @@ for i = 1:n_prediction+1 % compare n+1 timesteps
     Z_true = [Z_true,z];
 end
 
-Z2_error = Z_true(:) - Z_pred(:);
-Z2_mse_prediction = sqrt(mean(Z2_error.^2))/sqrt(mean(Z_true(:).^2))
+% Z2_error = Z_true(:) - Z_pred(:);
+% Z2_mse_prediction = sqrt(mean(Z2_error.^2))/sqrt(mean(Z_true(:).^2))
+RMSE = rmse(n_prediction,EDMD,Z_pred,Z_true)
 
 %% get true states from lifted states
 t_pred = (0:n_prediction) * dt;
@@ -48,6 +49,7 @@ end
 % parse each state for plotting
 x_true=[]; dx_true = []; theta_true =[]; wb_true=[];
 x_pred=[]; dx_pred = []; theta_pred =[]; wb_pred=[];
+X1 = []; X2 = [];
 for i = 1:length(t_pred)
     x_true = [x_true, X_true(1:3,i)];
     dx_true = [dx_true, X_true(4:6,i)];
@@ -64,12 +66,15 @@ for i = 1:length(t_pred)
     wb_pred = [wb_pred, vee_map(wb_hat_pred)];
 end
 
+X2.x = x_true; X2.dx = dx_true;
+X2.theta = theta_true; X2.wb = wb_true;
+
+X1.x = x_pred; X1.dx = dx_pred;
+X1.theta = theta_pred; X1.wb = wb_pred;
 
 %% plots
 figure(1); hold on;
-%subplot(6,3,[10,13])
 subplot(2,4,2)
-%scatter3(Z_true(1,1), Z_true(2,1), Z_true(3,1),sz,'kx'); hold on
 plot3(x_true(1,:), x_true(2,:), x_true(3,:)); hold on
 plot3(x_pred(1,:), x_pred(2,:), x_pred(3,:), '--'); hold on
 grid on; box on; axis square;
@@ -82,94 +87,6 @@ lgd = legend('true','predicted');
 lgd.Location = 'north';
 lgd.NumColumns = 2;
 
-%% trajjectory plots
-figure(2)
-%linear states
-subplot(6,4,1)
-plot(t_traj, x_true(1,:)); hold on;
-plot(t_traj, x_pred(1,:),'--'); hold on;
-axes = gca;
-set(axes,'FontSize',15);
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$x$','FontSize',20, 'Interpreter','latex')
-box on; axes.LineWidth=2;
-
-subplot(6,4,5)
-plot(t_traj, x_true(2,:)); hold on; 
-plot(t_traj, x_pred(2,:),'--'); hold on;
-ylabel('$y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,9)
-plot(t_traj, x_true(3,:)); hold on;
-plot(t_traj, x_pred(3,:),'--'); hold on;
-ylabel('$z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,13)
-plot(t_traj, dx_true(1,:)); hold on;
-plot(t_traj, dx_pred(1,:),'--'); hold on;
-ylabel('$v_x$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,17)
-plot(t_traj, dx_true(2,:)); hold on;
-plot(t_traj, dx_pred(2,:),'--'); hold on;
-ylabel('$v_y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,21)
-plot(t_traj, dx_true(3,:)); hold on; 
-plot(t_traj, dx_pred(3,:),'--'); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$v_z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-%angular states
-subplot(6,4,2)
-plot(t_traj, theta_true(1,:)); hold on; 
-plot(t_traj, theta_pred(1,:),'--'); hold on;
-ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,6)
-plot(t_traj, theta_true(2,:)); hold on; 
-plot(t_traj, theta_pred(2,:),'--'); hold on;
-ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,10)
-plot(t_traj, theta_true(3,:)); hold on; 
-plot(t_traj, theta_pred(3,:),'--'); hold on;
-ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,14)
-plot(t_traj, wb_true(1,:)); hold on;
-plot(t_traj, wb_pred(1,:),'--'); hold on;
-ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,18)
-plot(t_traj, wb_true(2,:)); hold on;
-plot(t_traj, wb_pred(2,:),'--'); hold on;
-ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-
-subplot(6,4,22)
-plot(t_traj, wb_true(3,:)); hold on;
-plot(t_traj, wb_pred(3,:),'--'); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
+% state traj plots
+fig_num = 30; flag = 'edmd';
+state_plots(fig_num,t_traj,X1,X2,flag)

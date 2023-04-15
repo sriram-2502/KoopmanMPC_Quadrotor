@@ -8,15 +8,15 @@ set(0,'defaultfigurecolor',[1 1 1])
 seed = 1;
 rng(seed);
 
-% set params
-show_plot = true;
-use_casadi = false;
-
 % import functions
 addpath dynamics edmd mpc utils training
 
 %% get robot parameters
 params = get_params();
+% set params
+show_plot = true;
+params.use_casadi = false;
+
 dt = 1e-3;
 t_span = 0.1; % in (s)
 
@@ -41,11 +41,15 @@ B = EDMD.B;
 C = EDMD.C;
 Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
+EDMD.n_basis = n_basis;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z2_predicted = A*Z1 + B*U1;
 Z2_error = Z2(:) - Z2_predicted(:);
 Z2_mse_training = sqrt(mean(Z2_error.^2))/sqrt(mean(Z2(:).^2))
+
+n_prediction = length(Z2_predicted);
+RMSE = rmse(n_prediction,EDMD,Z2_predicted,Z2)
 
 %% evaluate EDMD prediction
 X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
@@ -57,11 +61,10 @@ params.predHorizon = 10;
 params.simTimeStep = 1e-3;
 
 dt_sim = params.simTimeStep;
-N = params.predHorizon;
 
 % simulation time
-SimTimeDuration = 0.5;  % [sec]
-MAX_ITER = floor(SimTimeDuration/dt_sim);
+params.SimTimeDuration = 0.5;  % [sec]
+params.MAX_ITER = floor(params.SimTimeDuration/ params.simTimeStep);
 
 % get reference trajectory (desired)
 n_control = 1; % number of random controls to apply
@@ -97,87 +100,33 @@ end
 basis = get_basis(X0,n_basis);
 Z0 = [X0(1:3); X0(4:6); basis];
 
-% --- logging ---
-tstart = 0;
-tend = dt_sim;
-
-[tout,Xout,Uout,Xdout] = deal([]);
-
-%% --- simulation ----
-h_waitbar = waitbar(0,'Calculating...');
-tic
-Z = Z0;
-for ii = 1:MAX_ITER
-    % --- time vector ---
-    %t_ = dt_sim * (ii-1) + params.Tmpc * (0:N-1);
-
-    %% --- MPC ----      
-    %form QP using explicit matrices
-    z_ref = Z_ref(:,ii:ii+N-1);
-
-    if(use_casadi)
-        [zval] = casadi_MPC(EDMD,Z,Z_ref,N,params);
-    else
-        [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,params);
-        % solve QP using quadprog     
-        [zval] = quadprog(G,f,[],[],[],[],[],[]);
-    end
-
-    Ut = zval(1:4)
-
-    %% --- simulate without any external disturbances ---
-    %parse true states from lifted states
-    Xt = C*Z;
-    x = Xt(1:3); dx = Xt(4:6); 
-    R = reshape(Xt(7:15),[3,3])';
-    wb_hat = reshape(Xt(16:24),[3,3]); % body frame
-    wb = vee_map(wb_hat');
-    Xt = [x;dx;R(:);wb;];  
-    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
-    
-    %% --- update ---
-    Xt = X(end,:)';
-    % get lifted states at t=0
-    basis = get_basis(Xt,n_basis);
-    Z = [Xt(1:3); Xt(4:6); basis];
-
-    tstart = tend;
-    tend = tstart + dt_sim;
-    
-    %% --- log ---  
-    lent = length(t(2:end));
-    tout = [tout;t(2:end)];
-    Xout = [Xout;X(2:end,:)];
-    Uout = [Uout;repmat(Ut',[lent,1])];
-    Xdout = [Xdout;repmat(X_ref(:,ii)',[lent,1])];
-
-    waitbar(ii/MAX_ITER,h_waitbar,'Calculating...');
-end
-close(h_waitbar)
-fprintf('Calculation Complete!\n')
-toc
+mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,params);
 
 %% plots
 % parse each state for plotting
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x_mpc=[]; dx_mpc = []; theta_mpc =[]; wb_mpc=[];
+X_ref = []; X = [];
+for i = 1:length(mpc.t)
+    x_ref = [x_ref, mpc.X_ref(i,1:3)']; 
+    dx_ref = [dx_ref, mpc.X_ref(i,4:6)']; 
+    R_ref = reshape(mpc.X_ref(i,7:15),[3,3]);
+    theta_ref = [theta_ref, vee_map(logm(R_ref))]; 
+    wb_ref = [wb_ref, mpc.X_ref(i,16:18)']; 
 
-for i = 1:length(tout)
-    x_ref = [x_ref, Xdout(i,1:3)'];
-    dx_ref = [dx_ref, Xdout(i,4:6)'];
-    R_ref = reshape(Xdout(i,7:15),[3,3]);
-    theta_ref = [theta_ref, vee_map(logm(R_ref))];
-    wb_ref = [wb_ref, Xdout(i,16:18)'];
-
-    x_mpc = [x_mpc, Xout(i,1:3)'];
-    dx_mpc = [dx_mpc, Xout(i,4:6)'];
-    R_mpc = reshape(Xout(i,7:15),[3,3]); %todo make R positive def in EDMD
-    theta_mpc = [theta_mpc, vee_map(logm(R_mpc))];
-    wb_mpc = [wb_mpc, Xout(i,16:18)'];
+    x_mpc = [x_mpc, mpc.X(i,1:3)']; 
+    dx_mpc = [dx_mpc, mpc.X(i,4:6)']; 
+    R_mpc = reshape(mpc.X(i,7:15),[3,3]); %todo make R positive def in EDMD
+    theta_mpc = [theta_mpc, vee_map(logm(R_mpc))]; 
+    wb_mpc = [wb_mpc, mpc.X(i,16:18)']; 
 end
 
+X_ref.x = x_ref; X_ref.dx = dx_ref;
+X_ref.theta = theta_ref; X_ref.wb = wb_ref;
 
-%% plots
+X.x = x_mpc; X.dx = dx_mpc;
+X.theta = theta_mpc; X.wb = wb_mpc;
+
 figure(1);
 subplot(2,4,5)
 plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
@@ -192,141 +141,10 @@ lgd = legend('reference','MPC');
 lgd.Location = 'northoutside';
 lgd.NumColumns = 1;
 
-%% time domain plots
-%linear states
-figure(3)
-subplot(6,4,1)
-plot(tout, x_ref(1,:)); hold on;
-plot(tout, x_mpc(1,:),'--'); hold on;
-axes = gca;
-set(axes,'FontSize',15);
-ylabel('$x$','FontSize',20, 'Interpreter','latex')
-box on; axes.LineWidth=2;
-lgd = legend('reference','MPC');
-lgd.Location = 'northoutside';
-lgd.NumColumns = 2;
-xlim([0,SimTimeDuration]);
+%state traj plots
+fig_num = 10; flag = 'mpc';
+state_plots(fig_num,mpc.t,X,X_ref,flag)
+fig_num = 20;
 
-subplot(6,4,5)
-plot(tout, x_ref(2,:)); hold on; 
-plot(tout, x_mpc(2,:),'--'); hold on;
-ylabel('$y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,9)
-plot(tout, x_ref(3,:)); hold on;
-plot(tout, x_mpc(3,:),'--'); hold on;
-ylabel('$z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,13)
-plot(tout, dx_ref(1,:)); hold on;
-plot(tout, dx_mpc(1,:),'--'); hold on;
-ylabel('$v_x$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,17)
-plot(tout, dx_ref(2,:)); hold on;
-plot(tout, dx_mpc(2,:),'--'); hold on;
-ylabel('$v_y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,21)
-plot(tout, dx_ref(3,:)); hold on; 
-plot(tout, dx_mpc(3,:),'--'); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$v_z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-%angular states
-subplot(6,4,2)
-plot(tout, theta_ref(1,:)); hold on; 
-plot(tout, theta_mpc(1,:),'--'); hold on;
-ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,6)
-plot(tout, theta_ref(2,:)); hold on; 
-plot(tout, theta_mpc(2,:),'--'); hold on;
-ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,10)
-plot(tout, theta_ref(3,:)); hold on; 
-plot(tout, theta_mpc(3,:),'--'); hold on;
-ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,14)
-plot(tout, wb_ref(1,:)); hold on;
-plot(tout, wb_mpc(1,:),'--'); hold on;
-ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,18)
-plot(tout, wb_ref(2,:)); hold on;
-plot(tout, wb_mpc(2,:),'--'); hold on;
-ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,22)
-plot(tout, wb_ref(3,:)); hold on;
-plot(tout, wb_mpc(3,:),'--'); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-%plot control inputs
-subplot(6,4,3)
-plot(tout,Uout(:,1)); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$f_t$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,7)
-plot(tout,Uout(:,2)); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$M_1$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,11)
-plot(tout,Uout(:,3)); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$M_2$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
-
-subplot(6,4,15)
-plot(tout,Uout(:,4)); hold on;
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
-ylabel('$M_3$','FontSize',20, 'Interpreter','latex')
-axes = gca; set(axes,'FontSize',15);
-box on; axes.LineWidth=2;
-xlim([0,SimTimeDuration]);
+% control polts
+control_plots(fig_num,mpc.t,mpc.U)
