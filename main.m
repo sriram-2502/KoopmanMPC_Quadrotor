@@ -43,11 +43,7 @@ X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-% params.predHorizon = 15;
-% params.Tmpc = 1/50;
-% params.simTimeStep = 1/200;
-
-params.predHorizon = 15;
+params.predHorizon = 10;
 %params.Tmpc = 1e-3;
 params.simTimeStep = 1e-3;
 
@@ -55,7 +51,7 @@ dt_sim = params.simTimeStep;
 N = params.predHorizon;
 
 % simulation time
-SimTimeDuration = 0.2;  % [sec]
+SimTimeDuration = 0.5;  % [sec]
 MAX_ITER = floor(SimTimeDuration/dt_sim);
 
 % get reference trajectory (desired)
@@ -184,11 +180,11 @@ zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 axes.LineWidth=2;
 lgd = legend('reference','MPC');
-lgd.Location = 'north';
-lgd.NumColumns = 2;
+lgd.Location = 'northoutside';
+lgd.NumColumns = 1;
 
 %linear states
-subplot(6,3,2)
+subplot(6,4,2)
 plot(tout, x_ref(1,:)); hold on;
 plot(tout, x_mpc(1,:),'--'); hold on;
 axes = gca;

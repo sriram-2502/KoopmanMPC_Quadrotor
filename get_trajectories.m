@@ -19,8 +19,8 @@ params = get_params();
 net_weight = params.mass*params.g;
 
 % use multivariate random nomral distribution since inputs are correlated
-mu = [10;10;10;10]; % ensures flight
-Sigma = diag([1;1;1;1]);
+mu = [0;0;0;0]; % ensures flight
+Sigma = diag([10;10;10;10]);
 U_rnd = mvnrnd(mu,Sigma,n_control);
 
 % get U as uniform random distribution
