@@ -9,7 +9,7 @@ Z2 = EDMD.Z2;
 %% check prediction on new control input
 n_control = 1; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
-[X, U, X1, X2] = get_trajectories(X0,n_control,t_traj,show_plot);
+[X, U, X1, X2] = get_rnd_trajectories(X0,n_control,t_traj,show_plot);
 
 % get z0
 basis = get_basis(X0,n_basis);

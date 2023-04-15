@@ -1,10 +1,19 @@
 clc; clear; close all;
-set(0,'DefaultLineLineWidth',2) %linewidh on plots
+
+%set default figure properties
+set(0,'DefaultLineLineWidth',2)
 set(0,'defaultfigurecolor',[1 1 1])
+
+% fix random seed
 seed = 1;
 rng(seed);
+
+% set params
 show_plot = true;
 use_casadi = false;
+
+% import functions
+addpath dynamics edmd mpc utils training
 
 %% get robot parameters
 params = get_params();
@@ -22,7 +31,7 @@ X0 = [x0;dx0;R0(:);wb0];
 n_control = 100; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
 show_plot = true;
-[X, U, X1, X2, U1] = get_trajectories(X0,n_control,t_traj,show_plot);
+[X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
 n_basis = 3;
@@ -59,7 +68,7 @@ n_control = 1; % number of random controls to apply
 % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
 t_traj = 0:1e-3:10;
 show_plot = false;
-[X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
+[X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot);
 
 % get lifted states
 Z_ref = [];

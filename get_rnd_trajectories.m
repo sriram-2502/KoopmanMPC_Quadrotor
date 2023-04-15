@@ -1,4 +1,4 @@
-function [X, U, X1, X2, U1, U2] = get_trajectories(X0, n_control,t_traj, show_plot)
+function [X, U, X1, X2, U1, U2] = get_rnd_trajectories(X0, n_control,t_traj, show_plot)
 % function to random trajectories
 % Inputs
 % X0                : initial condition
