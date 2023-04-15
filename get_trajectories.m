@@ -20,7 +20,7 @@ net_weight = params.mass*params.g;
 
 % use multivariate random nomral distribution since inputs are correlated
 mu = [0;0;0;0]; % ensures flight
-Sigma = diag([10;10;10;10]);
+Sigma = diag([20;20;20;20]);
 U_rnd = mvnrnd(mu,Sigma,n_control);
 
 % get U as uniform random distribution
@@ -48,13 +48,14 @@ for i=1:n_control
     
     if(show_plot)
         figure(1)
-        subplot(6,3,[1,4])
+        %subplot(6,3,[1,4])
+        subplot(2,4,1)
         plot3(x(:,1),x(:,2),x(:,3)); hold on;
         grid on; axis square
         grid on; box on; axis square;
-        xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
-        ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
-        zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
+        xlabel('$x$','FontSize',20, 'Interpreter','latex')
+        ylabel('$y$','FontSize',20, 'Interpreter','latex')
+        zlabel('$z$','FontSize',20, 'Interpreter','latex')
         axes = gca; set(axes,'FontSize',15);
         axes.LineWidth=2;
         title('training trajectories for EDMD')

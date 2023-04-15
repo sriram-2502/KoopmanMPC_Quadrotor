@@ -25,7 +25,7 @@ show_plot = true;
 [X, U, X1, X2, U1] = get_trajectories(X0,n_control,t_traj,show_plot);
 
 %% get EDMD matrices
-n_basis = 2;
+n_basis = 3;
 EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
@@ -42,58 +42,58 @@ Z2_mse_training = sqrt(mean(Z2_error.^2))/sqrt(mean(Z2(:).^2))
 X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 
 %% do MPC
-% MPC parameters
-params.predHorizon = 10;
-%params.Tmpc = 1e-3;
-params.simTimeStep = 1e-3;
-
-dt_sim = params.simTimeStep;
-N = params.predHorizon;
-
-% simulation time
-SimTimeDuration = 0.5;  % [sec]
-MAX_ITER = floor(SimTimeDuration/dt_sim);
-
-% get reference trajectory (desired)
-n_control = 1; % number of random controls to apply
-% t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
-t_traj = 0:1e-3:10;
-show_plot = false;
-[X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
-
-% get lifted states
-Z_ref = [];
-X_ref = X_ref(:,2:end);
-for i = 1:length(X_ref) % compare n+1 timesteps
-    x_des = X_ref(:,i);
-    basis = get_basis(x_des,n_basis);
-    z = [x_des(1:3); x_des(4:6); basis];
-    Z_ref = [Z_ref,z];
-end
-
-% get lift desired states for constant reference
-% Z_ref = []; Xf = []; 
-% xf = [0.38;-1.2;3.6]; dxf = [0;0;0];
-% Rf = eye(3); wbf = [0;0;0];
-% Xff = [xf;dxf;Rf(:);wbf];
-% for i = 1:MAX_ITER+N % compare n+1 timesteps
-%     x_des = Xff;
-%     Xf = [Xf,x_des];
+% % MPC parameters
+% params.predHorizon = 10;
+% %params.Tmpc = 1e-3;
+% params.simTimeStep = 1e-3;
+% 
+% dt_sim = params.simTimeStep;
+% N = params.predHorizon;
+% 
+% % simulation time
+% SimTimeDuration = 0.5;  % [sec]
+% MAX_ITER = floor(SimTimeDuration/dt_sim);
+% 
+% % get reference trajectory (desired)
+% n_control = 1; % number of random controls to apply
+% % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+% t_traj = 0:1e-3:10;
+% show_plot = false;
+% [X_ref] = get_trajectories(X0,n_control,t_traj,show_plot);
+% 
+% % get lifted states
+% Z_ref = [];
+% X_ref = X_ref(:,2:end);
+% for i = 1:length(X_ref) % compare n+1 timesteps
+%     x_des = X_ref(:,i);
 %     basis = get_basis(x_des,n_basis);
 %     z = [x_des(1:3); x_des(4:6); basis];
 %     Z_ref = [Z_ref,z];
 % end
-% X_ref = Xf;
-
-basis = get_basis(X0,n_basis);
-Z0 = [X0(1:3); X0(4:6); basis];
-
-% --- logging ---
-tstart = 0;
-tend = dt_sim;
-
-[tout,Xout,Uout,Xdout] = deal([]);
-
+% 
+% % get lift desired states for constant reference
+% % Z_ref = []; Xf = []; 
+% % xf = [0.38;-1.2;3.6]; dxf = [0;0;0];
+% % Rf = eye(3); wbf = [0;0;0];
+% % Xff = [xf;dxf;Rf(:);wbf];
+% % for i = 1:MAX_ITER+N % compare n+1 timesteps
+% %     x_des = Xff;
+% %     Xf = [Xf,x_des];
+% %     basis = get_basis(x_des,n_basis);
+% %     z = [x_des(1:3); x_des(4:6); basis];
+% %     Z_ref = [Z_ref,z];
+% % end
+% % X_ref = Xf;
+% 
+% basis = get_basis(X0,n_basis);
+% Z0 = [X0(1:3); X0(4:6); basis];
+% 
+% % --- logging ---
+% tstart = 0;
+% tend = dt_sim;
+% 
+% [tout,Xout,Uout,Xdout] = deal([]);
+% 
 % %% --- simulation ----
 % h_waitbar = waitbar(0,'Calculating...');
 % tic
@@ -180,96 +180,144 @@ tend = dt_sim;
 % axes = gca; set(axes,'FontSize',15);
 % axes.LineWidth=2;
 % lgd = legend('reference','MPC');
-% lgd.Location = 'north';
-% lgd.NumColumns = 2;
+% lgd.Location = 'northoutside';
+% lgd.NumColumns = 1;
 % 
+% %% time domain plots
 % %linear states
-% subplot(6,3,2)
+% figure(3)
+% subplot(6,4,1)
 % plot(tout, x_ref(1,:)); hold on;
 % plot(tout, x_mpc(1,:),'--'); hold on;
 % axes = gca;
 % set(axes,'FontSize',15);
-% xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 % ylabel('$x$','FontSize',20, 'Interpreter','latex')
 % box on; axes.LineWidth=2;
+% lgd = legend('reference','MPC');
+% lgd.Location = 'northoutside';
+% lgd.NumColumns = 2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,5)
+% subplot(6,4,5)
 % plot(tout, x_ref(2,:)); hold on; 
 % plot(tout, x_mpc(2,:),'--'); hold on;
 % ylabel('$y$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,8)
+% subplot(6,4,9)
 % plot(tout, x_ref(3,:)); hold on;
 % plot(tout, x_mpc(3,:),'--'); hold on;
 % ylabel('$z$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,11)
+% subplot(6,4,13)
 % plot(tout, dx_ref(1,:)); hold on;
 % plot(tout, dx_mpc(1,:),'--'); hold on;
 % ylabel('$v_x$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,14)
+% subplot(6,4,17)
 % plot(tout, dx_ref(2,:)); hold on;
 % plot(tout, dx_mpc(2,:),'--'); hold on;
 % ylabel('$v_y$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,17)
+% subplot(6,4,21)
 % plot(tout, dx_ref(3,:)); hold on; 
 % plot(tout, dx_mpc(3,:),'--'); hold on;
 % xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 % ylabel('$v_z$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
 % %angular states
-% subplot(6,3,3)
+% subplot(6,4,2)
 % plot(tout, theta_ref(1,:)); hold on; 
 % plot(tout, theta_mpc(1,:),'--'); hold on;
 % ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,6)
+% subplot(6,4,6)
 % plot(tout, theta_ref(2,:)); hold on; 
 % plot(tout, theta_mpc(2,:),'--'); hold on;
 % ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,9)
+% subplot(6,4,10)
 % plot(tout, theta_ref(3,:)); hold on; 
 % plot(tout, theta_mpc(3,:),'--'); hold on;
 % ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,12)
+% subplot(6,4,14)
 % plot(tout, wb_ref(1,:)); hold on;
 % plot(tout, wb_mpc(1,:),'--'); hold on;
 % ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,15)
+% subplot(6,4,18)
 % plot(tout, wb_ref(2,:)); hold on;
 % plot(tout, wb_mpc(2,:),'--'); hold on;
 % ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
 % 
-% subplot(6,3,18)
+% subplot(6,4,22)
 % plot(tout, wb_ref(3,:)); hold on;
 % plot(tout, wb_mpc(3,:),'--'); hold on;
 % xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 % ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
 % axes = gca; set(axes,'FontSize',15);
 % box on; axes.LineWidth=2;
-
+% xlim([0,SimTimeDuration]);
+% 
+% %plot control inputs
+% subplot(6,4,3)
+% plot(tout,Uout(:,1)); hold on;
+% xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+% ylabel('$f_t$','FontSize',20, 'Interpreter','latex')
+% axes = gca; set(axes,'FontSize',15);
+% box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
+% 
+% subplot(6,4,7)
+% plot(tout,Uout(:,2)); hold on;
+% xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+% ylabel('$M_1$','FontSize',20, 'Interpreter','latex')
+% axes = gca; set(axes,'FontSize',15);
+% box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
+% 
+% subplot(6,4,11)
+% plot(tout,Uout(:,3)); hold on;
+% xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+% ylabel('$M_2$','FontSize',20, 'Interpreter','latex')
+% axes = gca; set(axes,'FontSize',15);
+% box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);
+% 
+% subplot(6,4,15)
+% plot(tout,Uout(:,4)); hold on;
+% xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+% ylabel('$M_3$','FontSize',20, 'Interpreter','latex')
+% axes = gca; set(axes,'FontSize',15);
+% box on; axes.LineWidth=2;
+% xlim([0,SimTimeDuration]);

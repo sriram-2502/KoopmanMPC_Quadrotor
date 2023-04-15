@@ -2,7 +2,7 @@ clc; clear; close all;
 set(0,'DefaultLineLineWidth',2) %linewidh on plots
 set(0,'defaultfigurecolor',[1 1 1])
 seed = 1;
-%rng(seed);
+rng(seed);
 show_plot = true;
 use_casadi = false;
 
@@ -169,8 +169,8 @@ end
 
 
 %% plots
-figure(2);
-subplot(6,3,[10,13])
+figure(1);
+subplot(2,4,5)
 plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
 plot3(x_mpc(1,:), x_mpc(2,:), x_mpc(3,:), '--'); hold on
 grid on; box on; axis square;
@@ -183,93 +183,141 @@ lgd = legend('reference','MPC');
 lgd.Location = 'northoutside';
 lgd.NumColumns = 1;
 
+%% time domain plots
 %linear states
-subplot(6,3,2)
+figure(3)
+subplot(6,4,1)
 plot(tout, x_ref(1,:)); hold on;
 plot(tout, x_mpc(1,:),'--'); hold on;
 axes = gca;
 set(axes,'FontSize',15);
-xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 ylabel('$x$','FontSize',20, 'Interpreter','latex')
 box on; axes.LineWidth=2;
+lgd = legend('reference','MPC');
+lgd.Location = 'northoutside';
+lgd.NumColumns = 2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,5)
+subplot(6,4,5)
 plot(tout, x_ref(2,:)); hold on; 
 plot(tout, x_mpc(2,:),'--'); hold on;
 ylabel('$y$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,8)
+subplot(6,4,9)
 plot(tout, x_ref(3,:)); hold on;
 plot(tout, x_mpc(3,:),'--'); hold on;
 ylabel('$z$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,11)
+subplot(6,4,13)
 plot(tout, dx_ref(1,:)); hold on;
 plot(tout, dx_mpc(1,:),'--'); hold on;
 ylabel('$v_x$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,14)
+subplot(6,4,17)
 plot(tout, dx_ref(2,:)); hold on;
 plot(tout, dx_mpc(2,:),'--'); hold on;
 ylabel('$v_y$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,17)
+subplot(6,4,21)
 plot(tout, dx_ref(3,:)); hold on; 
 plot(tout, dx_mpc(3,:),'--'); hold on;
 xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 ylabel('$v_z$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
 %angular states
-subplot(6,3,3)
+subplot(6,4,2)
 plot(tout, theta_ref(1,:)); hold on; 
 plot(tout, theta_mpc(1,:),'--'); hold on;
 ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,6)
+subplot(6,4,6)
 plot(tout, theta_ref(2,:)); hold on; 
 plot(tout, theta_mpc(2,:),'--'); hold on;
 ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,9)
+subplot(6,4,10)
 plot(tout, theta_ref(3,:)); hold on; 
 plot(tout, theta_mpc(3,:),'--'); hold on;
 ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,12)
+subplot(6,4,14)
 plot(tout, wb_ref(1,:)); hold on;
 plot(tout, wb_mpc(1,:),'--'); hold on;
 ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,15)
+subplot(6,4,18)
 plot(tout, wb_ref(2,:)); hold on;
 plot(tout, wb_mpc(2,:),'--'); hold on;
 ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
-subplot(6,3,18)
+subplot(6,4,22)
 plot(tout, wb_ref(3,:)); hold on;
 plot(tout, wb_mpc(3,:),'--'); hold on;
 xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
 
+%plot control inputs
+subplot(6,4,3)
+plot(tout,Uout(:,1)); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$f_t$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
+
+subplot(6,4,7)
+plot(tout,Uout(:,2)); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$M_1$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
+
+subplot(6,4,11)
+plot(tout,Uout(:,3)); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$M_2$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
+
+subplot(6,4,15)
+plot(tout,Uout(:,4)); hold on;
+xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+ylabel('$M_3$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+box on; axes.LineWidth=2;
+xlim([0,SimTimeDuration]);
