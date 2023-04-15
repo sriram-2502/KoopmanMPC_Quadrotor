@@ -49,10 +49,10 @@ for i = 1:n_control
     RMSE_i = rmse(X,X_ref);
 
     % sum rmse for each control
-    x_err =  x_err + RMSE_i.x;
-    dx_err =  dx_err + RMSE_i.dx;
-    theta_err =  theta_err + RMSE_i.theta;
-    wb_err =  wb_err + RMSE_i.wb;
+    x_err =  [x_err, RMSE_i.x];
+    dx_err =  [dx_err, RMSE_i.dx];
+    theta_err =  [theta_err, RMSE_i.theta];
+    wb_err =  [wb_err, RMSE_i.wb];
 
     %% get true states from lifted states
     t_pred = (0:n_prediction) * dt;
@@ -108,10 +108,10 @@ for i = 1:n_control
     lgd.NumColumns = 2;
 end
 % avg rmse for n_controls
-RMSE_val.x = x_err/n_control;
-RMSE_val.dx = dx_err/n_control;
-RMSE_val.theta = theta_err/n_control;
-RMSE_val.wb = wb_err/n_control;
+RMSE_val.x = [mean(x_err), std(x_err)];
+RMSE_val.dx = [mean(dx_err), std(dx_err)];
+RMSE_val.theta = [mean(theta_err), std(theta_err)];
+RMSE_val.wb = [mean(wb_err), std(wb_err)];
 RMSE_val
 
 % state traj plots
