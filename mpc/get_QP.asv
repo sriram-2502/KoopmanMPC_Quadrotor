@@ -83,11 +83,11 @@ for i = 1:N
     %% Augmented inequality constraint
     
     %A_ineq_i = repmat([-1;1],4,1);
-    A_ineq_i = kron(eye(4),[-1;1]);
+    A_ineq_i = kron(eye(4),A_ineq_i);
     A_ineq = blkdiag(A_ineq, A_ineq_i);
     % set lower and upper bounds for control inputs
-    u_lb = -50;
-    u_ub = 50;
+    u_lb = 0;
+    u_ub = 100;
     
     b_ineq_i = [-u_lb; u_ub];
     b_ineq_i = repmat(b_ineq_i,4,1);

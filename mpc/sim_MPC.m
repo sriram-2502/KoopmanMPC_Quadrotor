@@ -24,7 +24,7 @@ for ii = 1:params.MAX_ITER
     else
         [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,params);
         % solve QP using quadprog     
-        [zval] = quadprog(G,f,[],[],[],[],[],[]);
+        [zval] = quadprog(G,f,A,b,[],[],[],[]);
     end
 
     Ut = zval(1:4);

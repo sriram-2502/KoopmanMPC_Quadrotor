@@ -21,7 +21,7 @@ for i = 1:n_control
     
     % propagate z0 for prediction
     Z_pred = [];
-    n_prediction = 100; % 100 timesteps works best
+    n_prediction = 100; % 100 timesteps
     z = z0; Z_pred = [z0]; % add initial
     for i = 1:n_prediction
         z_next = A*z + B*U(:,i);

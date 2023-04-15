@@ -35,7 +35,7 @@ flag = 'train';
 [X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 %% get EDMD matrices
-n_basis = 3;
+n_basis = 3; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
 A = EDMD.A;
 B = EDMD.B;
