@@ -184,7 +184,7 @@ lgd.Location = 'northoutside';
 lgd.NumColumns = 1;
 
 %linear states
-subplot(6,4,2)
+subplot(6,3,2)
 plot(tout, x_ref(1,:)); hold on;
 plot(tout, x_mpc(1,:),'--'); hold on;
 axes = gca;
