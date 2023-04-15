@@ -46,8 +46,12 @@ EDMD.n_basis = n_basis;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z2_predicted = A*Z1 + B*U1;
-n_prediction = length(Z2_predicted);
-RMSE_training = rmse(n_prediction,EDMD,Z2_predicted,Z2)
+X_ref=[]; X=[];
+for i = 1:length(Z2_predicted)
+    X_ref = [X_ref, EDMD.C*Z2(:,i)];
+    X = [X, EDMD.C*Z2_predicted(:,i)];
+end
+RMSE_training = rmse(X,X_ref)
 
 %% evaluate EDMD prediction
 show_plot = false;
@@ -62,7 +66,7 @@ params.simTimeStep = 1e-3;
 dt_sim = params.simTimeStep;
 
 % simulation time
-params.SimTimeDuration = 0.5;  % [sec]
+params.SimTimeDuration = 1;  % [sec]
 params.MAX_ITER = floor(params.SimTimeDuration/ params.simTimeStep);
 
 % get reference trajectory (desired)
@@ -141,6 +145,7 @@ lgd = legend('reference','MPC');
 lgd.Location = 'northoutside';
 lgd.NumColumns = 1;
 
+%%
 %state traj plots
 fig_num = 10; flag = 'mpc';
 state_plots(fig_num,mpc.t,X,X_ref,flag)

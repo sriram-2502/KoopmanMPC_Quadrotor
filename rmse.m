@@ -1,17 +1,10 @@
-function RMSE = rmse(n_prediction,EDMD,Z,Z_ref)
-
-X_ref=[]; X=[];
-for i = 1:length(Z)
-    X_ref = [X_ref, EDMD.C*Z_ref(:,i)];
-    X = [X, EDMD.C*Z(:,i)];
-    
-end
+function RMSE = rmse(X,X_ref)
 
 % parse each state
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x=[]; dx = []; theta =[]; wb=[];
 
-for i = 1:n_prediction
+for i = 1:length(X)
     x_ref = [x_ref, X_ref(1:3,i)];
     dx_ref = [dx_ref, X_ref(4:6,i)];
     R_true = reshape(X_ref(7:15,i)',[3,3]);

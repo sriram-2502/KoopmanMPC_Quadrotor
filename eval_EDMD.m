@@ -37,8 +37,16 @@ for i = 1:n_control
         z = [x(1:3); x(4:6); basis];
         Z_true = [Z_true,z];
     end
+
+    X_ref=[]; X=[];
+    for i = 1:length(Z_true)
+        X_ref = [X_ref, EDMD.C*Z_true(:,i)];
+        X = [X, EDMD.C*Z_pred(:,i)];
+        
+    end
+
     % get rmse for each control
-    RMSE_i = rmse(n_prediction,EDMD,Z_pred,Z_true);
+    RMSE_i = rmse(X,X_ref);
 
     % sum rmse for each control
     x_err =  x_err + RMSE_i.x;
