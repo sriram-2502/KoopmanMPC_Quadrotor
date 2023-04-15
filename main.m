@@ -30,8 +30,9 @@ X0 = [x0;dx0;R0(:);wb0];
 
 n_control = 100; % number of random controls to apply
 t_traj = 0:dt:t_span; % traj length to simulate (s)
-show_plot = true;
-[X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot);
+show_plot = true; 
+flag = 'train';
+[X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 %% get EDMD matrices
 n_basis = 3;
@@ -45,13 +46,11 @@ EDMD.n_basis = n_basis;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z2_predicted = A*Z1 + B*U1;
-Z2_error = Z2(:) - Z2_predicted(:);
-Z2_mse_training = sqrt(mean(Z2_error.^2))/sqrt(mean(Z2(:).^2))
-
 n_prediction = length(Z2_predicted);
-RMSE = rmse(n_prediction,EDMD,Z2_predicted,Z2)
+RMSE_training = rmse(n_prediction,EDMD,Z2_predicted,Z2)
 
 %% evaluate EDMD prediction
+show_plot = false;
 X_eval = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot);
 
 %% do MPC
@@ -71,7 +70,8 @@ n_control = 1; % number of random controls to apply
 % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
 t_traj = 0:1e-3:10;
 show_plot = false;
-[X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot);
+flag = 'mpc';
+[X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 % get lifted states
 Z_ref = [];

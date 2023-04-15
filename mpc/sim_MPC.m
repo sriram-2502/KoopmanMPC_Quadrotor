@@ -27,7 +27,7 @@ for ii = 1:params.MAX_ITER
         [zval] = quadprog(G,f,[],[],[],[],[],[]);
     end
 
-    Ut = zval(1:4)
+    Ut = zval(1:4);
 
     %% --- simulate without any external disturbances ---
     %parse true states from lifted states

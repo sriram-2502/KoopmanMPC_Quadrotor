@@ -1,4 +1,4 @@
-function [X, U, X1, X2, U1, U2] = get_rnd_trajectories(X0, n_control,t_traj, show_plot)
+function [X, U, X1, X2, U1, U2] = get_rnd_trajectories(X0, n_control,t_traj, show_plot,flag)
 % function to random trajectories
 % Inputs
 % X0                : initial condition
@@ -19,16 +19,31 @@ params = get_params();
 net_weight = params.mass*params.g;
 
 % use multivariate random nomral distribution since inputs are correlated
-mu = [0;0;0;0]; % ensures flight
-Sigma = diag([20;20;20;20]);
-U_rnd = mvnrnd(mu,Sigma,n_control);
+if(strcmp(flag,'train'))
+    mu = [0;0;0;0]; 
+    Sigma = diag([10;10;10;10]);
+    U_rnd = mvnrnd(mu,Sigma,n_control);
+end
+
+if(strcmp(flag,'val'))
+    mu = [0;0;0;0]; 
+    Sigma = diag([20;20;20;20]);
+    U_rnd = mvnrnd(mu,Sigma,n_control);
+end
+
+if(strcmp(flag,'mpc'))
+    mu = [0;0;0;0]; 
+    Sigma = diag([30;30;30;30]);
+    U_rnd = mvnrnd(mu,Sigma,n_control);
+end
+
 
 % get U as uniform random distribution
 % a = 10; b = 20;
 % U_rnd = a + (b-a).*rand(n_control,4);
 
 % add the net weight of the robot to ensure it flies up 
-U_rnd(:,1) = U_rnd(:,1) + net_weight;
+U_rnd(:,1) = U_rnd(:,1) + net_weight; % ensures flight
 
 % straight line traj
 %U_rnd(:,2:end) = 0;
