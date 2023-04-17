@@ -66,7 +66,7 @@ params.simTimeStep = 1e-3;
 dt_sim = params.simTimeStep;
 
 % simulation time
-params.SimTimeDuration = 1;  % [sec]
+params.SimTimeDuration = 1.2;  % [sec]
 params.MAX_ITER = floor(params.SimTimeDuration/ params.simTimeStep);
 
 % get reference trajectory (desired)
