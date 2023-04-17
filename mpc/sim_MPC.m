@@ -22,9 +22,11 @@ for ii = 1:params.MAX_ITER
     if(params.use_casadi)
         [zval] = casadi_MPC(EDMD,Z,Z_ref,N,params);
     else
+        tic
         [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,params);
         % solve QP using quadprog     
         [zval] = quadprog(G,f,A,b,[],[],[],[]);
+        toc
     end
 
     Ut = zval(1:4);
