@@ -3,7 +3,7 @@ In this paper, we propose a novel data-driven approach for learning and control 
 
 ## EDMD training and validation
 We learning linear predictors ```A``` and ```B``` for a nonlinear quadrotor system using physics-informed observable functions and EDMD.
-![EDMD](Figrures/EDMD_evalutation_1.png)
+![EDMD](Figures/EDMD_evalutation_1.png)
 
 ## MPC
 We developed a linear MPC in the lifted states to obtain optimal control at each time step to track a random reference trajectory
