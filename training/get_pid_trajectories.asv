@@ -1,0 +1,75 @@
+function [X, U, X1, X2, U1, U2] = get_pid_trajectories(X0, n_traj,t_traj, show_plot,flag)
+% function to random trajectories
+% Inputs
+% X0                : initial condition
+% n_traj            : number of trajectories to simulate
+% t_traj            : trajectory length for each control input 
+% Outputs
+% X                 : random trajectories generated with constant control for
+% each trajectory
+% size of X         : 18 * (n_control x len(t_traj))
+% U                 : random control inputs for each trajectory
+% size of U         : 4 * (n_control x len(t_traj))
+
+addpath('nominal_pid/utils');
+addpath('nominal_pid');
+
+%% get robot params
+params = get_params();
+
+
+%% simulate a pid controller to follow waypoints
+% states X = [x dx R wb]'
+% initial condition is from rest (from ground)
+X = []; X1=[]; X2=[];
+t_span = t_traj;
+
+
+for i=1:n_traj
+    % get control
+    controlhandle = @controller;
+
+    trajhandle = @traj_generator;
+    waypoints = [0    0   0;
+                 1    1   1;
+                 2    0   2;
+                 3    -1  1;
+                 4    0   0]';
+    trajhandle([],[],waypoints);
+
+    % simulate ode
+    % state - n x 13, with each row having format [x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r]
+    % control - n x 4 with each row having format [f_next, M1, M2, M3]
+    [t,x,U] = simulation_3d(trajhandle, controlhandle);
+    x(:,7) = []; % remove qw
+    
+    if(show_plot)
+        figure(1)
+        %subplot(6,3,[1,4])
+        subplot(2,4,1)
+        plot3(x(:,1),x(:,2),x(:,3)); hold on;
+        grid on; axis square
+        grid on; box on; axis square;
+        xlabel('$x$','FontSize',20, 'Interpreter','latex')
+        ylabel('$y$','FontSize',20, 'Interpreter','latex')
+        zlabel('$z$','FontSize',20, 'Interpreter','latex')
+        axes = gca; set(axes,'FontSize',15);
+        axes.LineWidth=2;
+        title('training trajectories for EDMD')
+    end
+
+    % collect data
+    X = [X,x']; % [X(t1), X(t2), ..., X(tn)] stacked for each control input n
+
+    % seperate data into snapshots
+    X1 = [X1,x(1:end-1,:)'];
+    X2 = [X2,x(2:end,:)'];
+end
+
+% stack U as constant along each trajectory for n control inputs
+U = [];U1 = []; U2=[];
+for i = 1:n_control    
+    U = [U, repmat(U_rnd(i,:)',1,length(t_span))];
+    U1 = [U1,repmat(U_rnd(i,:)',1,length(t_span)-1)];
+    U2 = [U2,repmat(U_rnd(i,:)',1,length(t_span)-1)];
+end
