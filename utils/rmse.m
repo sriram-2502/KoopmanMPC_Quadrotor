@@ -1,4 +1,4 @@
-function RMSE = rmse(X,X_ref)
+function RMSE = rmse(X,X_ref,traj_len,show_plot)
 
 % parse each state
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
@@ -22,55 +22,63 @@ for i = 1:length(X)
     wb = [wb, vee_map(wb_hat_pred)];
 end
 
-iter = 1:(size(X,2));
-figure
-subplot(6,2,1)
-plot(iter,x_ref(1,:),iter,x(1,:),'--');
-ylabel('x')
-
-subplot(6,2,2)
-plot(iter,x_ref(2,:),iter,x(2,:),'--');
-ylabel('y')
-
-subplot(6,2,3)
-plot(iter,x_ref(3,:),iter,x(3,:),'--');
-ylabel('z')
-
-subplot(6,2,4)
-plot(iter,dx_ref(1,:),iter,dx(1,:),'--');
-ylabel('x_dot')
-
-subplot(6,2,5)
-plot(iter,dx_ref(2,:),iter,dx(2,:),'--');
-ylabel('y_dot')
-
-subplot(6,2,6)
-plot(iter,dx_ref(3,:),iter,dx(3,:),'--');
-ylabel('z_dot')
-
-subplot(6,2,7)
-plot(iter,theta_ref(1,:),iter,theta(1,:),'--');
-ylabel('roll')
-
-subplot(6,2,8)
-plot(iter,theta_ref(2,:),iter,theta(2,:),'--');
-ylabel('pitch')
-
-subplot(6,2,9)
-plot(iter,theta_ref(3,:),iter,theta(3,:),'--');
-ylabel('yaw')
-
-subplot(6,2,10)
-plot(iter,wb_ref(1,:),iter,wb(1,:),'--');
-ylabel('w_x')
-
-subplot(6,2,11)
-plot(iter,wb_ref(2,:),iter,wb(2,:),'--');
-ylabel('w_y')
-
-subplot(6,2,12)
-plot(iter,wb_ref(3,:),iter,wb(3,:),'--');
-ylabel('w_z')
+traj_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
+traj_len = [0; traj_len]; % add 0 to get consistant trajectory lengths
+if show_plot
+for j=1:length(traj_len)-1
+    iter = 1:traj_len(j+1);
+    start_idx = sum(traj_len(1:j))+1;
+    end_idx = sum(traj_len(1:j+1));
+    figure
+    subplot(6,2,1)
+    plot(iter,x_ref(1,start_idx:end_idx),iter,x(1,start_idx:end_idx),'--');
+    ylabel('x')
+    
+    subplot(6,2,3)
+    plot(iter,x_ref(2,start_idx:end_idx),iter,x(2,start_idx:end_idx),'--');
+    ylabel('y')
+    
+    subplot(6,2,5)
+    plot(iter,x_ref(3,start_idx:end_idx),iter,x(3,start_idx:end_idx),'--');
+    ylabel('z')
+    
+    subplot(6,2,7)
+    plot(iter,dx_ref(1,start_idx:end_idx),iter,dx(1,start_idx:end_idx),'--');
+    ylabel('x_dot')
+    
+    subplot(6,2,9)
+    plot(iter,dx_ref(2,start_idx:end_idx),iter,dx(2,start_idx:end_idx),'--');
+    ylabel('y_dot')
+    
+    subplot(6,2,11)
+    plot(iter,dx_ref(3,start_idx:end_idx),iter,dx(3,start_idx:end_idx),'--');
+    ylabel('z_dot')
+    
+    subplot(6,2,2)
+    plot(iter,theta_ref(1,start_idx:end_idx),iter,theta(1,start_idx:end_idx),'--');
+    ylabel('roll')
+    
+    subplot(6,2,4)
+    plot(iter,theta_ref(2,start_idx:end_idx),iter,theta(2,start_idx:end_idx),'--');
+    ylabel('pitch')
+    
+    subplot(6,2,6)
+    plot(iter,theta_ref(3,start_idx:end_idx),iter,theta(3,start_idx:end_idx),'--');
+    ylabel('yaw')
+    
+    subplot(6,2,8)
+    plot(iter,wb_ref(1,start_idx:end_idx),iter,wb(1,start_idx:end_idx),'--');
+    ylabel('w_x')
+    
+    subplot(6,2,10)
+    plot(iter,wb_ref(2,start_idx:end_idx),iter,wb(2,start_idx:end_idx),'--');
+    ylabel('w_y')
+    
+    subplot(6,2,12)
+    plot(iter,wb_ref(3,start_idx:end_idx),iter,wb(3,start_idx:end_idx),'--');
+    ylabel('w_z')
+end
+end
 
 x_error = x_ref(:) - x(:);
 x_mse = sqrt(mean(x_error.^2))/length(X);

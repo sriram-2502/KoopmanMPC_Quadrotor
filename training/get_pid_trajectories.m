@@ -1,4 +1,4 @@
-function [X, U, X1, X2, U1, U2] = get_pid_trajectories(traj_param)
+function [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param)
 % function to random trajectories
 % Inputs
 
@@ -23,6 +23,7 @@ params = get_params();
 % initial condition is from rest (from ground)
 X = []; X1=[]; X2=[];
 U = []; U1=[]; U2=[];
+traj_len = [];
 
 for i=1:traj_param.n_traj
     % get control
@@ -32,7 +33,7 @@ for i=1:traj_param.n_traj
     if strcmp(traj_param.traj_type,'hover')
         height = traj_param.height(i);
         waypoints = zeros(3);
-        waypoints(end,:) = linspace(0,height(i),3);
+        waypoints(end,:) = linspace(0,height,3);
     end
     if strcmp(traj_param.traj_type,'circle')
         radius = traj_param.radius(i);
@@ -55,6 +56,7 @@ for i=1:traj_param.n_traj
     % modify states for EDMD
     % X = [x dx R wb]'
     x_edmd = [x(:,1:3),x(:,23:25),x(:,14:22),x(:,11:13)];
+    traj_len = [traj_len; length(t)];
 
 
     % collect data

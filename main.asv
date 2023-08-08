@@ -36,9 +36,9 @@ X0 = [x0;dx0;R0(:);wb0];
 
 % get traj for circle
 traj_param.traj_type = 'circle';
-traj_param.radius = [1]; traj_param.n_traj = length(traj_param.radius);
+traj_param.radius = [0.5]; traj_param.n_traj = length(traj_param.radius);
 traj_param.direction = -1;
-[X, U, X1, X2, U1, U2] = get_pid_trajectories(traj_param);
+[X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
 
 % get traj for random control input
 % n_control = 100; % number of random controls to apply
@@ -64,9 +64,7 @@ for i = 1:length(Z2_predicted)
     X_ref = [X_ref, EDMD.C*Z2(:,i)];
     X_pred = [X_pred, EDMD.C*Z2_predicted(:,i)];
 end
-RMSE_training = rmse(X_pred,X_ref)
-
-% plots
+RMSE_training = rmse(X_pred,X_ref,traj_len)
 
 
 %% evaluate EDMD prediction
