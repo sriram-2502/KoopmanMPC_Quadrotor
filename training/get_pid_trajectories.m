@@ -54,7 +54,7 @@ for i=1:traj_param.n_traj
     [t,x,u] = simulation_3d(trajhandle, controlhandle);
     % modify states for EDMD
     % X = [x dx R wb]'
-    x_edmd = [x(:,1:6),x(:,14:22),x(:,11:13)];
+    x_edmd = [x(:,1:3),x(:,23:25),x(:,14:22),x(:,11:13)];
 
 
     % collect data

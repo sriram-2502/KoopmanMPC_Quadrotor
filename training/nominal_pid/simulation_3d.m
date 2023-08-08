@@ -50,7 +50,8 @@ des_start = trajhandle(0, []);
 des_stop  = trajhandle(inf, []);
 stop_pos  = des_stop.pos;
 u0      = [0;0;0;0];
-x0      = [init_state(des_start.pos, 0);zeros(9,1)];
+x0      = [init_state(des_start.pos, 0);zeros(12,1)]; 
+% zeros at the end of x0 for consistant initial conditions
 x_init  = [x0;u0];
 xtraj   = zeros(max_iter*nstep, length(x0));
 utraj   = zeros(max_iter*nstep, length(u0));
@@ -84,8 +85,8 @@ for iter = 1:max_iter
     x    = xsave(end, :)';
 
     % Save to traj
-    xtraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,1:22);
-    utraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,23:26);
+    xtraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,1:25);
+    utraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,end-3:end);
     ttraj((iter-1)*nstep+1:iter*nstep) = tsave(1:end-1);
 
     % Update quad plot

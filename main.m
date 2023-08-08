@@ -36,7 +36,7 @@ X0 = [x0;dx0;R0(:);wb0];
 
 % get traj for circle
 traj_param.traj_type = 'circle';
-traj_param.n_traj = 4; traj_param.radius = [1,1.2];
+traj_param.radius = [0.5]; traj_param.n_traj = length(traj_param.radius);
 traj_param.direction = -1;
 [X, U, X1, X2, U1, U2] = get_pid_trajectories(traj_param);
 
@@ -59,12 +59,13 @@ EDMD.n_basis = n_basis;
 
 %% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
 Z2_predicted = A*Z1 + B*U1;
-X_ref=[]; X=[];
+X_ref=[]; X_pred=[];
 for i = 1:length(Z2_predicted)
     X_ref = [X_ref, EDMD.C*Z2(:,i)];
-    X = [X, EDMD.C*Z2_predicted(:,i)];
+    X_pred = [X_pred, EDMD.C*Z2_predicted(:,i)];
 end
-RMSE_training = rmse(X,X_ref)
+RMSE_training = rmse(X_pred,X_ref)
+
 
 %% evaluate EDMD prediction
 show_plot = false;

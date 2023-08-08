@@ -81,10 +81,14 @@ sdot(11) = pqrdot(1);
 sdot(12) = pqrdot(2);
 sdot(13) = pqrdot(3);
 
-% assemble u
-sdot(14) = F;
-sdot(15:17) = M;
+% add rotation matrix states (states 14 to 22)
+sdot = [sdot; wRb(:)];
 
-% add rotation matrix states
-sdot = [sdot; bRw(:)];
+% body frame acceleration for EDMD (states 23 to 25)
+sdot = [sdot; bRw*accel];
+
+% assemble u
+sdot(26) = F;
+sdot(27:29) = M;
+
 end
