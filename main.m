@@ -29,10 +29,16 @@ x0 = [0;0;0]; dx0 = [0;0;0];
 R0 = eye(3); wb0 = [0.1;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
-% get traj for hover
-traj_type = 'hover';
-n_traj = 4; height = [1,2,3,4];
-[X, U, X1, X2, U1, U2] = get_pid_trajectories(X0,n_traj,traj_type,height);
+% % get traj for hover
+% traj_param.traj_type = 'hover';
+% traj_param.n_traj = 4; traj_param.height = [1,2,3,4];
+% [X, U, X1, X2, U1, U2] = get_pid_trajectories(traj_param);
+
+% get traj for circle
+traj_param.traj_type = 'circle';
+traj_param.n_traj = 4; traj_param.radius = [1,1.2];
+traj_param.direction = -1;
+[X, U, X1, X2, U1, U2] = get_pid_trajectories(traj_param);
 
 % get traj for random control input
 % n_control = 100; % number of random controls to apply
@@ -43,7 +49,7 @@ n_traj = 4; height = [1,2,3,4];
 
 %% get EDMD matrices
 n_basis = 3; % n=3 works best
-EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj);
+EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;
 C = EDMD.C;

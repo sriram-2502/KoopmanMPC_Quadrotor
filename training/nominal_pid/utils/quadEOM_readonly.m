@@ -84,4 +84,7 @@ sdot(13) = pqrdot(3);
 % assemble u
 sdot(14) = F;
 sdot(15:17) = M;
+
+% add rotation matrix states
+sdot = [sdot; bRw(:)];
 end
