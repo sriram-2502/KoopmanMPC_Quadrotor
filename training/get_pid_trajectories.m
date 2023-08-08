@@ -45,7 +45,7 @@ for i=1:traj_param.n_traj
         % parametric expression for circle in XY-plane
         x_data = radius*cos(thetas);
         y_data = direction*radius*sin(thetas);
-        waypoints = [x_data; y_data; zeros(size(x_data))];
+        waypoints = [x_data; y_data; ones(size(x_data))];
     end
     trajhandle([],[],waypoints);
 
