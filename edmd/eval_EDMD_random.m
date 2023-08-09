@@ -1,4 +1,4 @@
-function X = eval_EDMD(X0,dt,t_span,EDMD,n_basis,show_plot)
+function X = eval_EDMD_random(X0,dt,t_span,EDMD,n_basis,show_plot)
 %% get EDMD matrices
 A = EDMD.A;
 B = EDMD.B;
