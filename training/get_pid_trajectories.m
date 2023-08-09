@@ -1,7 +1,6 @@
 function [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param)
 % function to random trajectories
 % Inputs
-
 % parameters        : structure of required trajectory parameters
 % Outputs
 % X                 : random trajectories generated with constant control for
