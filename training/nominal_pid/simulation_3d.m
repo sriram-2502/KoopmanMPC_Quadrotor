@@ -11,7 +11,7 @@ function [t_out, s_out, u_out] = simulation_3d(trajhandle, controlhandle)
 addpath('utils');
 
 % real-time
-real_time = true;
+real_time = false;
 
 % max time
 max_time = 50;

@@ -4,7 +4,7 @@ function RMSE = rmse(X,X_ref,traj_len,show_plot)
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x=[]; dx = []; theta =[]; wb=[];
 
-for i = 1:length(X)
+for i = 1:size(X,2)
     % for reference
     x_ref = [x_ref, X_ref(1:3,i)];
     dx_ref = [dx_ref, X_ref(4:6,i)];

@@ -15,7 +15,7 @@ X_ref=[]; X_pred=[];
 
 t_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
 t_len = [0; t_len]; % add 0 to get consistant trajectory lengths
-eval_traj_len = floor(traj_len./10); % part of the trajectory used for evaluation
+eval_traj_len = 50*ones(size(traj_len));%floor(traj_len./50); % part of the trajectory used for evaluation
 for j=1:length(t_len)-1
     start_idx = sum(t_len(1:j))+1;
     
@@ -28,7 +28,7 @@ for j=1:length(t_len)-1
     Z_pred = [];
     n_prediction = eval_traj_len(j); % 100 timesteps
     z = z0; Z_pred = [z0]; % add initial
-    for i = 1:n_prediction
+    for i = start_idx:start_idx+n_prediction
         z_next = A*z + B*U(:,i);
         z = z_next;
         Z_pred = [Z_pred,z];
@@ -36,7 +36,7 @@ for j=1:length(t_len)-1
     
     % get Z2 for comparion
     Z_true = [];
-    for i = 1:n_prediction+1 % compare n+1 timesteps
+    for i = start_idx:start_idx+n_prediction+1 % compare n+1 timesteps
         x = X(:,i);
         basis = get_basis(x,n_basis);
         z = [x(1:3); x(4:6); basis];
@@ -44,7 +44,7 @@ for j=1:length(t_len)-1
     end
 
     X_ref_j=[]; X_pred_j=[];
-    for i = 1:length(Z_true)
+    for i = 1:size(Z_true,2)
         X_ref_j = [X_ref_j, EDMD.C*Z_true(:,i)];
         X_pred_j = [X_pred_j, EDMD.C*Z_pred(:,i)];
     end

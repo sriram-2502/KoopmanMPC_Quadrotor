@@ -29,16 +29,16 @@ x0 = [0;0;0]; dx0 = [0;0;0];
 R0 = eye(3); wb0 = [0.1;0;0];
 X0 = [x0;dx0;R0(:);wb0];
 
-% % get traj for hover
-% traj_param.traj_type = 'hover';
-% traj_param.height = [1,2,3,4]; traj_param.n_traj = length(traj_param.height); 
-% [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-
-% get traj for circle
-traj_param.traj_type = 'circle';
-traj_param.radius = [1]; traj_param.n_traj = length(traj_param.radius);
-traj_param.direction = 1;
+% get traj for hover
+traj_param.traj_type = 'hover';
+traj_param.height = [1,2,3,4]; traj_param.n_traj = length(traj_param.height); 
 [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
+
+% % get traj for circle
+% traj_param.traj_type = 'circle';
+% traj_param.radius = [1,1.05,1.1,1.15,1.2]; traj_param.n_traj = length(traj_param.radius);
+% traj_param.direction = 1;
+% [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
 
 % get traj for random control input
 % n_control = 100; % number of random controls to apply
@@ -69,15 +69,14 @@ RMSE_training = rmse(X_pred,X_ref,traj_len,show_plot);
 
 
 %% evaluate EDMD prediction
-% % get traj for hover
-% traj_param.traj_type = 'hover';
-% traj_param.height = [1,2,3,4]; traj_param.n_traj = length(traj_param.height); 
-% [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
+% get traj for hover
+traj_param.traj_type = 'hover';
+traj_param.height = [2.5]; traj_param.n_traj = length(traj_param.height); 
 
-% get traj for circle
-traj_param.traj_type = 'circle';
-traj_param.radius = [0.9, 1.1]; traj_param.n_traj = length(traj_param.radius);
-traj_param.direction = 1;
+% % get traj for circle
+% traj_param.traj_type = 'circle';
+% traj_param.radius = [1.05]; traj_param.n_traj = length(traj_param.radius);
+% traj_param.direction = 1;
 
 show_plot = true;
 X_eval = eval_EDMD_pid(traj_param,EDMD,n_basis,show_plot);
