@@ -81,7 +81,8 @@ for iter = 1:max_iter
     end
 
     % Run simulation
-    [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
+%     [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
+    [tsave, xsave] = rk4_sol(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
     x    = xsave(end, :)';
 
     % Save to traj
@@ -100,7 +101,7 @@ for iter = 1:max_iter
     % Check to make sure ode45 is not timing out
     if(t> cstep*50)
         err = 'Ode45 Unstable';
-        break;
+%         break;
     end
   if video
     writeVideo(video_writer, getframe(h_fig));

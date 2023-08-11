@@ -31,7 +31,7 @@ X0 = [x0;dx0;R0(:);wb0];
 
 % get traj for hover
 traj_param.traj_type = 'hover';
-traj_param.height = [1,2,3,4]; traj_param.n_traj = length(traj_param.height); 
+traj_param.height = [2.4]; traj_param.n_traj = length(traj_param.height); 
 [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
 
 % % get traj for circle
@@ -48,7 +48,7 @@ traj_param.height = [1,2,3,4]; traj_param.n_traj = length(traj_param.height);
 % [X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 %% get EDMD matrices
-n_basis = 3; % n=3 works best
+n_basis = 0; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;

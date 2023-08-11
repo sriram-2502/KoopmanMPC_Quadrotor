@@ -85,7 +85,7 @@ sdot(13) = pqrdot(3);
 sdot = [sdot; wRb(:)];
 
 % body frame acceleration for EDMD (states 23 to 25)
-sdot = [sdot; bRw*accel];
+sdot = [sdot; accel];
 
 % assemble u
 sdot(26) = F;
