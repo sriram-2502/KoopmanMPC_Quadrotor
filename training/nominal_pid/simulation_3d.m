@@ -1,4 +1,4 @@
-function [t_out, s_out, u_out] = simulation_3d(trajhandle, controlhandle)
+function [t_out, s_out, u_out, xtraj_edmd] = simulation_3d(trajhandle, controlhandle, train_edmd)
 % NOTE: This srcipt will not run as expected unless you fill in proper
 % code in trajhandle and controlhandle
 % You should not modify any part of this script except for the
@@ -49,16 +49,22 @@ err = []; % runtime errors
 des_start = trajhandle(0, []);
 des_stop  = trajhandle(inf, []);
 stop_pos  = des_stop.pos;
-u0      = [0;0;0;0];
-x0      = [init_state(des_start.pos, 0);zeros(12,1)]; 
-% zeros at the end of x0 for consistant initial conditions
-x_init  = [x0;u0];
-xtraj   = zeros(max_iter*nstep, length(x0));
+
+if train_edmd
+    x0      = init_state(des_start.pos, 0); 
+    x0_edmd = init_state_edmd(des_start.pos, 0);
+    xtraj   = zeros(max_iter*nstep, length(x0));
+    xtraj_edmd   = zeros(max_iter*nstep, length(x0_edmd)); 
+else
+    x0      = init_state(des_start.pos, 0); 
+    xtraj   = zeros(max_iter*nstep, length(x0));
+end
+
+u0 = [0;0;0;0];
 utraj   = zeros(max_iter*nstep, length(u0));
+x_init  = x0;
 ttraj   = zeros(max_iter*nstep, 1);
-
 x       = x_init;        % state
-
 pos_tol = 0.01;
 vel_tol = 0.01;
 
@@ -81,13 +87,23 @@ for iter = 1:max_iter
     end
 
     % Run simulation
-%     [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
-    [tsave, xsave] = rk4_sol(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
+    if train_edmd
+    % use baseline PID to parse EDMD
+        f_handle = @(t,s) quadEOM(t, s, controlhandle, trajhandle, params);
+        [tsave, xsave, usave, x_edmd] = parse_edmd(f_handle, timeint, x, controlhandle, trajhandle, params);
+    else
+    % run baseline PID
+        [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
+        usave = zeros(length(tsave),length(u0));
+    end
     x    = xsave(end, :)';
 
     % Save to traj
-    xtraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,1:25);
-    utraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,end-3:end);
+    xtraj((iter-1)*nstep+1:iter*nstep,:) = xsave(1:end-1,:);
+    if train_edmd
+        xtraj_edmd((iter-1)*nstep+1:iter*nstep,:) = x_edmd(1:end-1,:);
+    end
+    utraj((iter-1)*nstep+1:iter*nstep,:) = usave(1:end-1,:);
     ttraj((iter-1)*nstep+1:iter*nstep) = tsave(1:end-1);
 
     % Update quad plot
@@ -120,6 +136,12 @@ end
 %% ************************* POST PROCESSING *************************
 % Truncate xtraj and ttraj
 xtraj = xtraj(1:iter*nstep,:);
+if train_edmd
+    xtraj_edmd = xtraj_edmd(1:iter*nstep,:);
+else
+    xtraj_edmd = [];
+end
+
 utraj = utraj(1:iter*nstep,:);
 ttraj = ttraj(1:iter*nstep);
 
