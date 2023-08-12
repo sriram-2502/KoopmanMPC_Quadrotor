@@ -1,9 +1,10 @@
-function mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,params)
+function mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,mpc_params)
 % --- logging ---
-dt_sim = params.simTimeStep;
-N = params.predHorizon;
+dt_sim = mpc_params.simTimeStep;
+N = mpc_params.predHorizon;
 tstart = 0;
 tend = dt_sim;
+params = sys_params;
 
 [tout,Xout,Uout,Xdout] = deal([]);
 
@@ -11,7 +12,7 @@ tend = dt_sim;
 h_waitbar = waitbar(0,'Calculating...');
 tic
 Z = Z0;
-for ii = 1:params.MAX_ITER
+for ii = 1:mpc_params.MAX_ITER
     % --- time vector ---
     %t_ = dt_sim * (ii-1) + params.Tmpc * (0:N-1);
 
@@ -19,11 +20,11 @@ for ii = 1:params.MAX_ITER
     %form QP using explicit matrices
     z_ref = Z_ref(:,ii:ii+N-1);
 
-    if(params.use_casadi)
-        [zval] = casadi_MPC(EDMD,Z,Z_ref,N,params);
+    if(mpc_params.use_casadi)
+        [zval] = casadi_MPC(EDMD,Z,Z_ref,N,mpc_params);
     else
         tic
-        [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,params);
+        [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,mpc_params);
         % solve QP using quadprog     
         [zval] = quadprog(G,f,A,b,[],[],[],[]);
         toc
@@ -35,14 +36,21 @@ for ii = 1:params.MAX_ITER
     %parse true states from lifted states
     Xt = EDMD.C*Z;
     x = Xt(1:3); dx = Xt(4:6); 
-    R = reshape(Xt(7:15),[3,3])';
+    wRb = reshape(Xt(7:15),[3,3])';
     wb_hat = reshape(Xt(16:24),[3,3]); % body frame
-    wb = vee_map(wb_hat');
-    Xt = [x;dx;R(:);wb;];  
-    [t,X] = ode45(@(t,X)dynamics_SRB(t,X,Ut,params),[tstart,tend],Xt);
+    wb = vee_map(wb_hat'); 
+    
+    % Xt = [x; dx in world frame; quartornions; body frame angular
+    % velocities]
+    bRw = wRb';
+    q = RotToQuat(bRw);
+    Xt = [x;wRb*dx;q;wb;]; % Xt for pid simulation (in world frame)
+
+    [t,X_pid] = ode45(@(t,s) quadEOM_readonly(t, s, Ut(1), Ut(2:end), params),[tstart,tend],Xt);
+    X = parse_edmd(t,X_pid);
     
     %% --- update ---
-    Xt = X(end,:)';
+    Xt = X(end,:)'; % Xt for EDMD (in body frame)
     % get lifted states at t=0
     basis = get_basis(Xt,EDMD.n_basis);
     Z = [Xt(1:3); Xt(4:6); basis];
@@ -57,7 +65,7 @@ for ii = 1:params.MAX_ITER
     Uout = [Uout;repmat(Ut',[lent,1])];
     Xdout = [Xdout;repmat(X_ref(:,ii)',[lent,1])];
 
-    waitbar(ii/params.MAX_ITER,h_waitbar,'Calculating...');
+    waitbar(ii/mpc_params.MAX_ITER,h_waitbar,'Calculating...');
 end
 close(h_waitbar)
 fprintf('Calculation Complete!\n')
