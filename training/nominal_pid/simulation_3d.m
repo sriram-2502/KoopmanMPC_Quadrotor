@@ -87,13 +87,12 @@ for iter = 1:max_iter
     end
 
     % Run simulation
+    [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
     if train_edmd
-    % use baseline PID to parse EDMD
-        f_handle = @(t,s) quadEOM(t, s, controlhandle, trajhandle, params);
-        [tsave, xsave, usave, x_edmd] = parse_edmd(f_handle, timeint, x, controlhandle, trajhandle, params);
+    % parse x to get x_EDMD and usave (to use in EDMD training and MPC) 
+        [x_edmd, usave] = parse_edmd(tsave, xsave, controlhandle, trajhandle, params);
     else
-    % run baseline PID
-        [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
+    % use xsave to get usave 
         usave = zeros(length(tsave),length(u0));
     end
     x    = xsave(end, :)';

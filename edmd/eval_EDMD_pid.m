@@ -10,7 +10,7 @@ Z2 = EDMD.Z2;
 
 
 %% check prediction on new control input
-[X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
+[T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
 X_ref=[]; X_pred=[];
 
 t_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit

@@ -1,4 +1,4 @@
-function [X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param)
+function [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param)
 % function to random trajectories
 % Inputs
 % parameters        : structure of required trajectory parameters
@@ -20,7 +20,7 @@ params = get_params();
 %% simulate a pid controller to follow waypoints
 % states X = [x dx R wb]'
 
-
+T = [];
 X = []; X1=[]; X2=[];
 U = []; U1=[]; U2=[];
 X_pid = [];
@@ -35,18 +35,24 @@ for i=1:traj_param.n_traj
         height = traj_param.height(i);
         waypoints = zeros(3);
         waypoints(end,:) = linspace(0,height,3);
-    end
-    if strcmp(traj_param.traj_type,'circle')
+    elseif strcmp(traj_param.traj_type,'circle')
         radius = traj_param.radius(i);
         direction = traj_param.direction;
+        center = traj_param.center;
         % direction = 1 for anticlockwise
         % direction = -1 for clockwise
         pres = 0.1;
         thetas = 0:pres:2*pi;
         % parametric expression for circle in XY-plane
-        x_data = radius*cos(thetas);
-        y_data = direction*radius*sin(thetas);
+        x_data = radius*cos(thetas)+center(1);
+        y_data = direction*radius*sin(thetas)+center(2);
         waypoints = [x_data; y_data; ones(size(x_data))];
+    elseif strcmp(traj_param.traj_type,'line')
+        endPoints = traj_param.endPoints;
+        startPoints = endPoints(:,1:2:end);
+        stopPoints = endPoints(:,2:2:end);
+        betweenPoints = (startPoints+stopPoints)/2;
+        waypoints = [startPoints, betweenPoints, stopPoints];
     end
     trajhandle([],[],waypoints);
 
@@ -58,6 +64,7 @@ for i=1:traj_param.n_traj
         [t,x_pid,u, x_edmd] = simulation_3d(trajhandle, controlhandle, train_edmd);
         traj_len = [traj_len; length(t)];
         % collect data
+        T = [T, t'];
         X = [X,x_edmd']; % [X(t1), X(t2), ..., X(tn)] stacked for each control input n
         U = [U, u'];
         % seperate data into snapshots
@@ -68,6 +75,7 @@ for i=1:traj_param.n_traj
     else
         [t,x_pid,u] = simulation_3d(trajhandle, controlhandle, train_edmd);
         traj_len = [traj_len; length(t)];
+        T = [T, t'];
         X_pid = [X_pid, x_pid'];
         X = X_pid;
     end
