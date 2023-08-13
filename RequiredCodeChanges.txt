@@ -1,6 +1,6 @@
 1. Multiplication with roataion matrix R
 
-2. Evaluation error for 'line'
+2. Evaluation error for 'line', (eval_EDMD_pid)
 
 3. Evaluation error metric
 
