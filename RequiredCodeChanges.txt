@@ -1,0 +1,9 @@
+1. Multiplication with roataion matrix R
+
+2. Evaluation error for 'line'
+
+3. Evaluation error metric
+
+4. Reference for MPC
+
+5. Animations for Koopman/MPC
