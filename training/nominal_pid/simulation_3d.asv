@@ -25,17 +25,16 @@ if video
 end
 
 %% **************************** FIGURES *****************************
-if(show_plot)
-    disp('Initializing figures...');
-    h_fig = figure;
-    h_3d = gca;
-    axis equal
-    grid on
-    view(3);
-    xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]')
-    quadcolors = lines(1);
-    set(gcf,'Renderer','OpenGL')
-end
+disp('Initializing figures...');
+h_fig = figure;
+h_3d = gca;
+axis equal
+grid on
+view(3);
+xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]')
+quadcolors = lines(1);
+
+set(gcf,'Renderer','OpenGL')
 
 %% *********************** INITIAL CONDITIONS ***********************
 disp('Setting initial conditions...');
@@ -151,9 +150,8 @@ utraj = utraj(1:iter*nstep,:);
 ttraj = ttraj(1:iter*nstep);
 
 % Truncate saved variables
-if(show_plot)
-    QP.TruncateHist();
-end
+QP.TruncateHist();
+
 % Plot position
 % h_pos = figure('Name', ['Quad position']);
 % plot_state(h_pos, QP.state_hist(1:3,:), QP.time_hist, 'pos', 'vic');

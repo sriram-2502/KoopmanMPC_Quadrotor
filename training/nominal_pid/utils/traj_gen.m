@@ -32,8 +32,11 @@ elseif strcmp(traj_params.traj_type,'circle')
 elseif strcmp(traj_params.traj_type,'line')
     % % get traj for slanted line
     traj_params.traj_type = 'line';
-    traj_params.endPoints = 0.5*[[0;0;0],[1;1;1]];
-    traj_params.n_traj = size(traj_params.endPoints,2)/2; 
+    height = parameter;
+    % waypoints [p1,p2,p3,...] where p1 = [x;y;z]
+    waypoints = zeros(3);
+    waypoints(end,:) = linspace(0,height,3);
+    traj_params.waypoints = waypoints';
 
 %%%%%%%%%%%%% TODO: add traj for random control inputs %%%%%%%%%%%%%%%%%%%
 % elseif strcmp(traj_params.traj_type,'random')

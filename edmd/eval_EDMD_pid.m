@@ -1,4 +1,4 @@
-function X = eval_EDMD_pid(traj_param,EDMD,n_basis,show_plot)
+function X = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot)
 %% get EDMD matrices
 A = EDMD.A;
 B = EDMD.B;
@@ -6,16 +6,14 @@ C = EDMD.C;
 Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
 
-%% Extract trajectory parameters
-
-
 %% check prediction on new control input
-[T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
 X_ref=[]; X_pred=[];
-
+traj_len = traj_params.traj_len;
 t_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
 t_len = [0; t_len]; % add 0 to get consistant trajectory lengths
-eval_traj_len = 100*ones(size(traj_len));%floor(traj_len./50); % part of the trajectory used for evaluation
+traj_params.eval_traj_len = 100*ones(size(traj_len));% part of the trajectory used for evaluation
+
+%loop for each traj
 for j=1:length(t_len)-1
     start_idx = sum(t_len(1:j))+1;
     
@@ -26,7 +24,7 @@ for j=1:length(t_len)-1
     
     % propagate z0 for prediction
     Z_pred = [];
-    n_prediction = eval_traj_len(j); % 100 timesteps
+    n_prediction = traj_params.eval_traj_len(j); % 100 timesteps
     z = z0; Z_pred = [z0]; % add initial
     for i = start_idx:start_idx+n_prediction
         z_next = A*z + B*U(:,i);
@@ -55,5 +53,5 @@ for j=1:length(t_len)-1
     
 end
 
-RMSE = rmse(X_pred,X_ref,eval_traj_len,show_plot)
+RMSE = rmse(X_pred,X_ref,traj_params.eval_traj_len,show_plot)
 

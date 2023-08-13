@@ -12,40 +12,18 @@ rng(seed);
 addpath dynamics edmd mpc utils training
 addpath(genpath('training'))
 
-%% get robot parameters
+%% get parameters
 mpc_params = get_params();
 % set params
 show_plot = true;
 mpc_params.use_casadi = false;
 
-%% generate trajectory data
-traj_tyep = 'circle';%'hover';%'circle';
+%% generate trajectory data using nominal controller
+traj_params.traj_type = 'line';%'hover';%'circle';
+traj_params.params = [1];
+traj_params.n_traj = length(traj_params.params);
 
-if strcmp(traj_tyep,'hover')
-    % % get traj for hover
-    traj_param.traj_type = 'hover';
-    traj_param.height = [1]; traj_param.n_traj = length(traj_param.height); 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'circle')
-    % get traj for circle
-    traj_param.traj_type = 'circle';
-    traj_param.radius = [1]; traj_param.n_traj = length(traj_param.radius);
-    traj_param.direction = 1; traj_param.center = [1; 0];
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'line')
-    % % get traj for slanted line
-    traj_param.traj_type = 'line';
-    traj_param.endPoints = 0.5*[[0;0;0],[1;1;1]];
-    traj_param.n_traj = size(traj_param.endPoints,2)/2; 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-end
-
-% get traj for random control input
-% n_control = 100; % number of random controls to apply
-% t_traj = 0:dt:t_span; % traj length to simulate (s)
-% show_plot = true; 
-% flag = 'train';
-% [X, U, X1, X2, U1] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
+[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
 %% get EDMD matrices
 n_basis = 2; % n=3 works best
@@ -57,39 +35,22 @@ Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
 EDMD.n_basis = n_basis;
 
-%% check prediction on the training distrubution as || Z2 - (AZ1 + BU1) ||_mse
+%% One timestep prediction
 Z2_predicted = A*Z1 + B*U1;
 X_ref=[]; X_pred=[];
 for i = 1:length(Z2_predicted)
     X_ref = [X_ref, EDMD.C*Z2(:,i)];
     X_pred = [X_pred, EDMD.C*Z2_predicted(:,i)];
 end
-show_plot = true;
-RMSE_training = rmse(X_pred,X_ref,traj_len,show_plot);
+RMSE_training = rmse(X_pred,X_ref,traj_params.traj_len,show_plot);
 
-
-%% evaluate EDMD prediction
-if strcmp(traj_tyep,'hover')
-    % % get traj for hover
-    traj_param.traj_type = 'hover';
-    traj_param.height = [1]; traj_param.n_traj = length(traj_param.height); 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'circle')
-    % get traj for circle
-    traj_param.traj_type = 'circle';
-    traj_param.radius = [1]; traj_param.n_traj = length(traj_param.radius);
-    traj_param.direction = 1; traj_param.center = [1; 0];
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'line')
-    % % get traj for slanted line
-    traj_param.traj_type = 'line';
-    traj_param.endPoints = 0.5*[[0;0;0],[1;1;1]];
-    traj_param.n_traj = size(traj_param.endPoints,2)/2; 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-end
-
-show_plot = true;
-X_eval = eval_EDMD_pid(traj_param,EDMD,n_basis,show_plot);
+%% evaluate EDMD prediction for n timesteps
+traj_params.traj_type = 'line';%'hover';%'circle';
+traj_params.params = [1];
+radius = traj_params.params;
+traj_params = traj_gen(traj_params,radius);
+[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
+X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
@@ -100,7 +61,7 @@ mpc_params.simTimeStep = 1e-2;
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 0.5;  % [sec]
+mpc_params.SimTimeDuration = 0.1;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 % get reference trajectory (desired)
@@ -111,24 +72,11 @@ mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 % flag = 'mpc';
 % [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
-if strcmp(traj_tyep,'hover')
-    % % get traj for hover
-    traj_param.traj_type = 'hover';
-    traj_param.height = [1]; traj_param.n_traj = length(traj_param.height); 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'circle')
-    % get traj for circle
-    traj_param.traj_type = 'circle';
-    traj_param.radius = [1]; traj_param.n_traj = length(traj_param.radius);
-    traj_param.direction = 1; traj_param.center = [1; 0];
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-elseif strcmp(traj_tyep,'line')
-    % % get traj for slanted line
-    traj_param.traj_type = 'line';
-    traj_param.endPoints = [[0;0;0],0.5*[1;1;1]];
-    traj_param.n_traj = size(traj_param.endPoints,2)/2; 
-    [T, X, U, X1, X2, U1, U2, traj_len] = get_pid_trajectories(traj_param);
-end
+traj_params.traj_type = 'line';%'hover';%'circle';
+traj_params.params = [1];
+traj_params.n_traj = length(traj_params.params);
+show_plot = false;
+[T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
 % get lifted states
 Z_ref = [];
@@ -181,9 +129,6 @@ ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
 zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 axes.LineWidth=2;
-lgd = legend('reference','MPC');
-lgd.Location = 'northoutside';
-lgd.NumColumns = 1;
 
 %%
 %state traj plots

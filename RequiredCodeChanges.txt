@@ -2,7 +2,7 @@
 
 2. Evaluation error for 'line', (eval_EDMD_pid)
 
-3. Evaluation error metric
+3. Evaluation error metric - fixed. training is one timestep, eval_EDMD is n timesteps (sriram)
 
 4. Reference for MPC
 
