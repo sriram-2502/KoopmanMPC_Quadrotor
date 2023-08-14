@@ -11,7 +11,7 @@ X_ref=[]; X_pred=[];
 traj_len = traj_params.traj_len;
 t_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
 t_len = [0; t_len]; % add 0 to get consistant trajectory lengths
-traj_params.eval_traj_len = 100*ones(size(traj_len));% part of the trajectory used for evaluation
+traj_params.eval_traj_len = 50*ones(size(traj_len));% part of the trajectory used for evaluation
 
 %loop for each traj
 for j=1:length(t_len)-1

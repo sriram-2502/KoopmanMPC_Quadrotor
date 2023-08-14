@@ -6,7 +6,6 @@ function traj_params = traj_gen(traj_params,parameter)
 
 if strcmp(traj_params.traj_type,'hover')
     % get traj for hover
-    traj_params.traj_type = 'hover';
     height = parameter;
     % waypoints [p1,p2,p3,...] where p1 = [x;y;z]
     waypoints = zeros(3);
@@ -15,7 +14,6 @@ if strcmp(traj_params.traj_type,'hover')
 
 elseif strcmp(traj_params.traj_type,'circle')
     % get traj for circle
-    traj_params.traj_type = 'circle';
     radius = parameter;
     traj_params.direction = 1; % direction = +1/-1 for anticlockwise/clockwise
     traj_params.center = [0; 0]; %% TODO - make it as user input
@@ -31,12 +29,16 @@ elseif strcmp(traj_params.traj_type,'circle')
 
 elseif strcmp(traj_params.traj_type,'line')
     % % get traj for slanted line
-    traj_params.traj_type = 'line';
-    height = parameter;
-    % waypoints [p1,p2,p3,...] where p1 = [x;y;z]
-    waypoints = zeros(3);
-    waypoints(end,:) = linspace(0,height,3);
-    traj_params.waypoints = waypoints';
+    % incomplete code, need to check
+        startPoint = traj_param.startPoints(:,i);
+        endPoint = traj_param.endPoints(:,i);
+        % waypoints: as convex combination of start and end point
+        num_trajPoints = 5;
+        srtP_wts = linspace(1,0,num_trajPoints);
+        strP_combo = srtP_wts.*repmat(startPoint,1,num_trajPoints);
+        stpP_wts = linspace(0,1,num_trajPoints);
+        stpP_combo = stpP_wts.*repmat(endPoint,1,num_trajPoints);
+        waypoints = strP_combo+stpP_combo;
 
 %%%%%%%%%%%%% TODO: add traj for random control inputs %%%%%%%%%%%%%%%%%%%
 % elseif strcmp(traj_params.traj_type,'random')

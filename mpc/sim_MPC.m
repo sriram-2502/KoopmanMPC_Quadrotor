@@ -67,7 +67,8 @@ for ii = 1:mpc_params.MAX_ITER
 
     waitbar(ii/mpc_params.MAX_ITER,h_waitbar,'Calculating...');
 end
-close(h_waitbar)
+F = findall(0,'type','figure','tag','TMWWaitbar');
+delete(F);
 fprintf('Calculation Complete!\n')
 toc
 

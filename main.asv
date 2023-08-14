@@ -19,7 +19,7 @@ show_plot = false;
 mpc_params.use_casadi = false;
 
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'circle';%'hover';%'circle';
+traj_params.traj_type = 'hover';%'hover';%'circle';
 % parameter: 
 % hover:-> height
 % circle:-> radius
@@ -55,14 +55,14 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 5;
+mpc_params.predHorizon = 10;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 2.5;  % [sec]
+mpc_params.SimTimeDuration = 0.1;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 % get reference trajectory (desired)
@@ -73,6 +73,8 @@ mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 % flag = 'mpc';
 % [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
+traj_params.params = [1];
+traj_params.n_traj = length(traj_params.params);
 show_plot = false;
 [T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
@@ -117,6 +119,18 @@ X_ref.theta = theta_ref; X_ref.wb = wb_ref;
 X.x = x_mpc; X.dx = dx_mpc;
 X.theta = theta_mpc; X.wb = wb_mpc;
 
+figure(1);
+subplot(2,4,5)
+plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
+plot3(x_mpc(1,:), x_mpc(2,:), x_mpc(3,:), '--'); hold on
+grid on; box on; axis square;
+xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
+ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
+zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+axes.LineWidth=2;
+
+%%
 %state traj plots
 fig_num = 10; flag = 'mpc';
 state_plots(fig_num,mpc.t,X,X_ref,flag)
@@ -124,14 +138,3 @@ fig_num = 20;
 
 % control polts
 control_plots(fig_num,mpc.t,mpc.U)
-
-% figure(1);
-% subplot(2,4,5)
-% plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
-% plot3(x_mpc(1,:), x_mpc(2,:), x_mpc(3,:), '--'); hold on
-% grid on; box on; axis square;
-% xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
-% ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
-% zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
-% axes = gca; set(axes,'FontSize',15);
-% axes.LineWidth=2;
