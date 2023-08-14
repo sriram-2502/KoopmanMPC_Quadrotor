@@ -1,4 +1,4 @@
-function EDMD = get_EDMD(X1, X2, U1, n_basis)
+function EDMD = get_EDMD(X1, X2, U1, n_basis, t_traj)
 % function to generate A B matrices using EDMD
 % Inputs
 % X1            : state trajecotries of n traj of length 1:m-1

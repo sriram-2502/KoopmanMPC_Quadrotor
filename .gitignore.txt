@@ -1,7 +1,0 @@
-*.asv
-*.mat
-*.csv
-.gitattributes
-*.pptx
-*.mp4
-*.avi
