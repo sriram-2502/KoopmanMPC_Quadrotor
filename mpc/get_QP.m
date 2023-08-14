@@ -51,14 +51,15 @@ X_ref = [x_ref;dx_ref;theta_ref;wb_ref];
 %% define costs 
 Qx = diag([1e4;1e4;1e2]);
 Qv = diag([1e2;1e2;1e2]);
-Qa = 1e2*eye(9);
-Qw = 1e2*eye(9);
+Qa = 1e6*eye(9);
+Qw = 1e6*eye(9);
 Q_i = 0*eye(size(Z,1));
 Q_i(1:24,1:24) = blkdiag(Qx, Qv, Qa, Qw);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e-6;1e0;1e0;1e0]);
+% R_i = diag([1e-6;1e0;1e0;1e0]);
+R_i = diag([1e-2;1e6;1e6;1e6]);
 
 %% Build QP Matrices
 A_hat = zeros(n*N,n);
@@ -86,8 +87,8 @@ for i = 1:N
     A_ineq_i = kron(eye(4),[-1;1]);
     A_ineq = blkdiag(A_ineq, A_ineq_i);
     % set lower and upper bounds for control inputs
-    u_lb = -50;
-    u_ub = 50;
+    u_lb = -100;
+    u_ub = 100;
     
     b_ineq_i = [-u_lb; u_ub];
     b_ineq_i = repmat(b_ineq_i,4,1);

@@ -9,7 +9,7 @@ function dXdt = dynamics_SRB(t,X,U,params)
 % dXdt      - future states based on SRB dynamics
 %% parameters
 mass = params.mass;
-J = params.J; % inertia tensor in body frame {B}
+J = params.I; % inertia tensor in body frame {B}
 g = 9.81;
 e3 = [0;0;1];
 

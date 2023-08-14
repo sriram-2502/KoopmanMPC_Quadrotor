@@ -24,14 +24,13 @@ traj_params.traj_type = 'circle';%'hover';%'circle';
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = linspace(1,1.5,1);  
+traj_params.params = [1,1.1,1.2,1.3];  
 traj_params.n_traj = length(traj_params.params);
 
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
 %% get EDMD matrices
-
-n_basis = 3; % n=3 works best
+n_basis = 4; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;
@@ -55,14 +54,14 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 5;
+mpc_params.predHorizon = 10;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 2.5;  % [sec]
+mpc_params.SimTimeDuration = 0.2;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 % get reference trajectory (desired)
@@ -74,6 +73,8 @@ mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 % [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 show_plot = false;
+traj_params.params = 1;  
+traj_params.n_traj = length(traj_params.params);
 [T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
 % get lifted states

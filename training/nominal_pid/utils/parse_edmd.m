@@ -38,7 +38,7 @@ for i=1:length(tsave)
     wRb = bRw';
 
     % x_edmd = [x, xdot_body, R(:), wb] -- 18 states
-    accel_body = bRw*xsave(i,4:6)'; %correct rotation matrix is bRw I think
+    accel_body = bRw*xsave(i,4:6)'; %bRw gives best prediction
     x_edmd = [x_edmd; [xsave(i,1:3),accel_body',wRb(:)',xsave(i,end-2:end)]];
 end
 
