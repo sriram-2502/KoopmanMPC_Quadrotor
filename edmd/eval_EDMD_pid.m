@@ -26,7 +26,7 @@ for j=1:length(t_len)-1
     Z_pred = [];
     n_prediction = traj_params.eval_traj_len(j); % 100 timesteps
     z = z0; Z_pred = [z0]; % add initial
-    for i = start_idx:start_idx+n_prediction
+    for i = start_idx:start_idx+n_prediction-1 % -1 to for n_prediction number of evaluations
         z_next = A*z + B*U(:,i);
         z = z_next;
         Z_pred = [Z_pred,z];
@@ -34,7 +34,7 @@ for j=1:length(t_len)-1
     
     % get Z2 for comparion
     Z_true = [];
-    for i = start_idx:start_idx+n_prediction+1 % compare n+1 timesteps
+    for i = start_idx:start_idx+n_prediction % n_prediction+1 number of evaluations
         x = X(:,i);
         basis = get_basis(x,n_basis);
         z = [x(1:3); x(4:6); basis];
@@ -52,6 +52,6 @@ for j=1:length(t_len)-1
     X_pred = [X_pred, X_pred_j];
     
 end
-
-RMSE = rmse(X_pred,X_ref,traj_params.eval_traj_len,show_plot)
+traj_params.eval_traj_len = traj_params.eval_traj_len+1;
+RMSE = rmse(X_pred,X_ref,traj_params.eval_traj_len,show_plot) % +1 to account for initial conditions
 

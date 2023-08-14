@@ -25,7 +25,7 @@ end
 x_err = []; dx_err = []; theta_err = []; wb_err = [];
 
 %% get rmse for each trajectory
-traj_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
+traj_len = traj_len; 
 traj_len = [0; traj_len]; % add 0 to get consistant trajectory lengths
 for j=1:length(traj_len)-1
     iter = 1:traj_len(j+1);
@@ -168,6 +168,8 @@ for j=1:length(traj_len)-1
         xlim([1,traj_len(j+1)])
         xlabel("$\textrm{iterations}$",'interpreter','latex', 'FontSize', 20)
         ylabel("$\omega_z$",'interpreter','latex', 'FontSize', 20)
+
+        legend('actual','predicted')
     end
 end
 

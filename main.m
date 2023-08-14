@@ -19,12 +19,12 @@ show_plot = false;
 mpc_params.use_casadi = false;
 
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'circle';%'hover';%'circle';
+traj_params.traj_type = 'circle';%'hover';%'line';
 % parameter: 
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = [1,1.1,1.2,1.3];  
+traj_params.params = [1,1.1,1.2];  
 traj_params.n_traj = length(traj_params.params);
 
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
