@@ -59,7 +59,7 @@ Q_i(1:24,1:24) = blkdiag(Qx, Qv, Qa, Qw);
 P = Q_i; % terminal cost
 
 % R_i = diag([1e-6;1e0;1e0;1e0]);
-R_i = diag([1e-2;1e6;1e6;1e6]);
+R_i = diag([1e-1;1e6;1e6;1e6]);
 
 %% Build QP Matrices
 A_hat = zeros(n*N,n);
@@ -87,11 +87,13 @@ for i = 1:N
     A_ineq_i = kron(eye(4),[-1;1]);
     A_ineq = blkdiag(A_ineq, A_ineq_i);
     % set lower and upper bounds for control inputs
-    u_lb = -100;
-    u_ub = 100;
+    u_lb = -[2;0.02;0.02;0.02];
+    u_ub = [2;0.02;0.02;0.02];
     
-    b_ineq_i = [-u_lb; u_ub];
-    b_ineq_i = repmat(b_ineq_i,4,1);
+%     b_ineq_i = [-u_lb; u_ub];
+    b_ineq_i = [u_lb, u_ub]';
+    b_ineq_i = b_ineq_i(:);
+%     b_ineq_i = repmat(b_ineq_i,4,1);
     b_ineq = [b_ineq; b_ineq_i];
 
 end
