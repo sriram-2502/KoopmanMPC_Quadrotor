@@ -30,7 +30,7 @@ traj_params.n_traj = length(traj_params.params);
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
 
 %% get EDMD matrices
-n_basis = 4; % n=3 works best
+n_basis = 3; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;
@@ -54,14 +54,14 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 10;
+mpc_params.predHorizon = 2;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 0.2;  % [sec]
+mpc_params.SimTimeDuration = 1;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 % get reference trajectory (desired)

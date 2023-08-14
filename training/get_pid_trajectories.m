@@ -38,11 +38,11 @@ for i=1:traj_params.n_traj
     
     % remove the first and the last parts of the trajcetory (to avoid rapid
     % changes in inputs)
-    start_idx = 300; end_idx=length(t)-300;
-    t = t(start_idx:end_idx);
-    x_pid = x_pid(start_idx:end_idx,:);
-    x_edmd = x_edmd(start_idx:end_idx,:);
-    u = u(start_idx:end_idx,:);
+%     start_idx = 300; end_idx=length(t)-300;
+%     t = t(start_idx:end_idx);
+%     x_pid = x_pid(start_idx:end_idx,:);
+%     x_edmd = x_edmd(start_idx:end_idx,:);
+%     u = u(start_idx:end_idx,:);
 
     T = [T, t'];
     X_pid = [X_pid, x_pid'];
