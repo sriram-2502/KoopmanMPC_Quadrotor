@@ -7,6 +7,7 @@ I = [0.00025,   0,          2.55e-6;
      0,         0.000232,   0;
      2.55e-6,   0,          0.0003738];
 
+params.g=g;
 params.mass = m;
 params.I    = I;
 params.invI = inv(I);

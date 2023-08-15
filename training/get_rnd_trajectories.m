@@ -12,7 +12,7 @@ function [X, U, X1, X2, U1, U2] = get_rnd_trajectories(X0, n_control,t_traj, sho
 % size of U         : 4 * (n_control x len(t_traj))
 
 %% get robot params
-params = get_params();
+params = sys_params;
 
 %% generate random inputs for U
 % generate n random inputs for 4 thrusters
