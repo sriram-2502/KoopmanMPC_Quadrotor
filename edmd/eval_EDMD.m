@@ -70,9 +70,9 @@ for i = 1:n_control
     for i = 1:length(t_pred)
         x_true = [x_true, X_true(1:3,i)];
         dx_true = [dx_true, X_true(4:6,i)];
-        R_true = reshape(X_true(7:15,i)',[3,3]);
-        theta_true = [theta_true, vee_map(logm(R_true))];
-        wb_hat_true = reshape(X_true(16:24,i),[3,3]);
+        R_true = reshape(X_true(7:15,i),[3,3])'; % get R from lifted states R.T
+        theta_true = [theta_true, vee_map(logm(R_true))]; % get wb_hat from lifted states wb_hat.T
+        wb_hat_true = reshape(X_true(16:24,i),[3,3])';
         wb_true = [wb_true, vee_map(wb_hat_true)];
     
         x_pred = [x_pred, X_pred(1:3,i)];
