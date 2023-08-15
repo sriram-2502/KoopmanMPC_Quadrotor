@@ -1,4 +1,4 @@
-function [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot)
+function [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag)
 % function to random trajectories
 % Inputs
 % traj_params        : structure of required trajectory parameters
@@ -34,15 +34,15 @@ for i=1:traj_params.n_traj
     % simulate ode
     % state - n x 13, with each row having format [x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r]
     % control - n x 4 with each row having format [f_next, M1, M2, M3]
-    [t, x_pid, x_edmd, u] = simulation_3d(trajhandle, controlhandle, train_edmd,show_plot);
+    [t, x_pid, x_edmd, u] = simulation_3d(trajhandle, controlhandle, train_edmd,show_plot,flag);
     
     % remove the first and the last parts of the trajcetory (to avoid rapid
     % changes in inputs)
-%     start_idx = 300; end_idx=length(t)-300;
-%     t = t(start_idx:end_idx);
-%     x_pid = x_pid(start_idx:end_idx,:);
-%     x_edmd = x_edmd(start_idx:end_idx,:);
-%     u = u(start_idx:end_idx,:);
+    start_idx = 300; end_idx=length(t)-300;
+    t = t(start_idx:end_idx);
+    x_pid = x_pid(start_idx:end_idx,:);
+    x_edmd = x_edmd(start_idx:end_idx,:);
+    u = u(start_idx:end_idx,:);
 
     T = [T, t'];
     X_pid = [X_pid, x_pid'];

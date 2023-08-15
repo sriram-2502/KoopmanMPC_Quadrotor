@@ -25,6 +25,11 @@ desired_state = trajhandle(t, current_state);
 
 % get control outputs
 [F, M] = controlhandle(current_state, desired_state, params);
+% TODO - add noise to control. current code makes ode45 too slow
+% if strcmp(params.flag,'training')
+%     F = F + 0.1*(0.5-rand(size(F)));%0.01*randn(size(F));
+%     M = M + 0.1*(0.5-rand(size(M)));%0.01*randn(size(M));
+% end
 
 % compute derivative
 sdot = quadEOM_readonly(t, s, F, M, params);

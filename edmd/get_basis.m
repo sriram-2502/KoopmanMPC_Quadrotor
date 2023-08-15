@@ -6,8 +6,8 @@ function basis = get_basis(X, n)
 % basis     : basis functions for SO(3) dynamics
 
 %% extract states
-R = reshape(X(7:15),[3,3]);
-wb = reshape(X(16:18),[3,1]);
+R = reshape(X(7:15),[3,3]); % wRb - body frame to inertial frame
+wb = reshape(X(16:18),[3,1]); % wb - body frame
 wb_hat = hat_map(wb);
 
 %% build observables [R';z1,z1;...]

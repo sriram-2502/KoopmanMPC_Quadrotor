@@ -1,4 +1,4 @@
-function [t_out, s_out, xtraj_edmd, u_out] = simulation_3d(trajhandle, controlhandle, train_edmd, show_plot)
+function [t_out, s_out, xtraj_edmd, u_out] = simulation_3d(trajhandle, controlhandle, train_edmd, show_plot,flag)
 % NOTE: This srcipt will not run as expected unless you fill in proper
 % code in trajhandle and controlhandle
 % You should not modify any part of this script except for the
@@ -18,6 +18,8 @@ max_time = 50;
 
 % parameters for simulation
 params = sys_params;
+params.flag=flag;
+
 video = false;
 if video
   video_writer = VideoWriter('helice.avi', 'Uncompressed AVI');
@@ -120,7 +122,7 @@ for iter = 1:max_iter
     time = time + cstep; % Update simulation time
     t = toc;
     % Check to make sure ode45 is not timing out
-    if(t> cstep*50)
+    if(t> cstep*500)
         err = 'Ode45 Unstable';
         break;
     end

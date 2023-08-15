@@ -15,19 +15,19 @@ addpath(genpath('training'))
 %% get parameters
 mpc_params = get_params();
 % set params
-show_plot = false;
+show_plot = true;
 mpc_params.use_casadi = false;
 
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'circle';%'hover';%'line';
+traj_params.traj_type = 'slanted_circle';%'hover';%'line';
 % parameter: 
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = linspace(0.5,1.5,5);  
+traj_params.params = [0.5,1,1.5];  
 traj_params.n_traj = length(traj_params.params);
-
-[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
+flag='training';
+[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 
 %% get EDMD matrices
 n_basis = 3; % n=3 works best
@@ -50,32 +50,29 @@ EDMD.n_basis = n_basis;
 
 %% evaluate EDMD prediction for n timesteps
 show_plot = true;
+flag='eval';
+traj_params.params = 1;  
+traj_params.n_traj = length(traj_params.params);
+[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
 mpc_params.predHorizon = 10;
 %params.Tmpc = 1e-3;
-mpc_params.simTimeStep = 1e-3;
+mpc_params.simTimeStep = 1e-2;
 
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 0.5;  % [sec]
+mpc_params.SimTimeDuration = 1;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
-
-% get reference trajectory (desired)
-% n_control = 1; % number of random controls to apply
-% % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
-% t_traj = 0:1e-3:10;
-% show_plot = false;
-% flag = 'mpc';
-% [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
 
 show_plot = false;
 traj_params.params = 1;  
 traj_params.n_traj = length(traj_params.params);
-[T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
+flag='mpc';
+[T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 
 % get lifted states
 Z_ref = [];
@@ -97,7 +94,7 @@ mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,mpc_params);
 % parse each state for plotting
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x_mpc=[]; dx_mpc = []; theta_mpc =[]; wb_mpc=[];
-X_ref = []; X = [];
+X_ref = []; X_mpc = [];
 for i = 1:length(mpc.t)
     x_ref = [x_ref, mpc.X_ref(i,1:3)']; 
     dx_ref = [dx_ref, mpc.X_ref(i,4:6)']; 
@@ -115,24 +112,23 @@ end
 X_ref.x = x_ref; X_ref.dx = dx_ref;
 X_ref.theta = theta_ref; X_ref.wb = wb_ref;
 
-X.x = x_mpc; X.dx = dx_mpc;
-X.theta = theta_mpc; X.wb = wb_mpc;
+X_mpc.x = x_mpc; X_mpc.dx = dx_mpc;
+X_mpc.theta = theta_mpc; X_mpc.wb = wb_mpc;
 
 %state traj plots
 fig_num = 10; flag = 'mpc';
-state_plots(fig_num,mpc.t,X,X_ref,flag)
+state_plots(fig_num,mpc.t,X_mpc,X_ref,flag)
 fig_num = 20;
 
 % control polts
 control_plots(fig_num,mpc.t,mpc.U)
 
-% figure(1);
-% subplot(2,4,5)
-% plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
-% plot3(x_mpc(1,:), x_mpc(2,:), x_mpc(3,:), '--'); hold on
-% grid on; box on; axis square;
-% xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
-% ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
-% zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
-% axes = gca; set(axes,'FontSize',15);
-% axes.LineWidth=2;
+figure(1);
+plot3(x_ref(1,:), x_ref(2,:), x_ref(3,:)); hold on
+plot3(x_mpc(1,:), x_mpc(2,:), x_mpc(3,:), '--'); hold on
+grid on; box on; axis square;
+xlabel('$x_1$','FontSize',20, 'Interpreter','latex')
+ylabel('$x_2$','FontSize',20, 'Interpreter','latex')
+zlabel('$x_3$','FontSize',20, 'Interpreter','latex')
+axes = gca; set(axes,'FontSize',15);
+axes.LineWidth=2;

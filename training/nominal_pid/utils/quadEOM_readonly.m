@@ -80,4 +80,10 @@ sdot(10) = qdot(4);
 sdot(11) = pqrdot(1);
 sdot(12) = pqrdot(2);
 sdot(13) = pqrdot(3);
+
+% add noise to states only in trianing (makes ode45 slow!)
+if(strcmp(params.flag,'training'))
+    noise = 0.05*randn(size(sdot));
+    sdot = sdot + noise;
+end
 end
