@@ -24,7 +24,7 @@ traj_params.traj_type = 'circle';%'hover';%'line';
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = [1,1.1,1.2];  
+traj_params.params = linspace(0.5,1.5,5);  
 traj_params.n_traj = length(traj_params.params);
 
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot);
@@ -54,14 +54,14 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 2;
+mpc_params.predHorizon = 10;
 %params.Tmpc = 1e-3;
-mpc_params.simTimeStep = 1e-2;
+mpc_params.simTimeStep = 1e-3;
 
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 1;  % [sec]
+mpc_params.SimTimeDuration = 0.5;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 % get reference trajectory (desired)

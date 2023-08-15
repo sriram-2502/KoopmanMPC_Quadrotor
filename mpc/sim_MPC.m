@@ -36,8 +36,8 @@ for ii = 1:mpc_params.MAX_ITER
     %parse true states from lifted states
     Xt = EDMD.C*Z;
     x = Xt(1:3); dx = Xt(4:6); 
-    wRb = reshape(Xt(7:15),[3,3])';
-    theta = vee_map(logm(wRb));
+    wRb = reshape(Xt(7:15),[3,3]);
+    theta = vee_map(logm(wRb'));
     wb_hat = reshape(Xt(16:24),[3,3]); % body frame
     wb = vee_map(wb_hat');
     Xt = [x;dx;wRb(:);wb];

@@ -8,18 +8,18 @@ for i = 1:size(X,2)
     % for reference
     x_ref = [x_ref, X_ref(1:3,i)];
     dx_ref = [dx_ref, X_ref(4:6,i)];
-    R_true = reshape(X_ref(7:15,i)',[3,3]);
-    theta_ref = [theta_ref, vee_map(logm(R_true))];
-    wb_hat_true = reshape(X_ref(16:24,i),[3,3]);
-    wb_ref = [wb_ref, vee_map(wb_hat_true)];
+    R_true = reshape(X_ref(7:15,i),[3,3]);
+    theta_ref = [theta_ref, vee_map(logm(R_true'))]; % get true state R from lifted state R.T
+    wb_hat_true = reshape(X_ref(16:24,i),[3,3]); 
+    wb_ref = [wb_ref, vee_map(wb_hat_true')]; % get true state wb_hat from lifted state wb_hat.T
 
     % for prediction
     x = [x, X(1:3,i)];
     dx = [dx, X(4:6,i)];
-    R = reshape(X(7:15,i)',[3,3]); %todo make R positive def in EDMD
-    theta = [theta, vee_map(logm(R))];
+    R = reshape(X(7:15,i),[3,3]); %todo make R positive def in EDMD
+    theta = [theta, vee_map(logm(R'))];
     wb_hat_pred = reshape(X(16:24,i),[3,3]);
-    wb = [wb, vee_map(wb_hat_pred)];
+    wb = [wb, vee_map(wb_hat_pred')];
 end
 
 x_err = []; dx_err = []; theta_err = []; wb_err = [];
