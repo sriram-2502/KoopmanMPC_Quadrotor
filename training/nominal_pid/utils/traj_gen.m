@@ -19,8 +19,7 @@ elseif strcmp(traj_params.traj_type,'circle')
     traj_params.center = [0; 0]; %% TODO - make it as user input
 
     % waypoints [p1,p2,p3,...] where p1 = [x;y;z]      
-    precision = 0.1;
-    thetas = 0:precision:2*pi;
+    thetas = linspace(0,2*pi,63);
     % parametric expression for circle in XY-plane
     x_data = radius*cos(thetas) + traj_params.center(1);
     y_data = traj_params.direction*radius*sin(thetas) + traj_params.center(2);
@@ -28,17 +27,39 @@ elseif strcmp(traj_params.traj_type,'circle')
     traj_params.waypoints = waypoints;
 
 elseif strcmp(traj_params.traj_type,'line')
-    % % get traj for slanted line
+    % get traj for slanted line
     % incomplete code, need to check
-        startPoint = traj_param.startPoints(:,i);
-        endPoint = traj_param.endPoints(:,i);
-        % waypoints: as convex combination of start and end point
-        num_trajPoints = 5;
-        srtP_wts = linspace(1,0,num_trajPoints);
-        strP_combo = srtP_wts.*repmat(startPoint,1,num_trajPoints);
-        stpP_wts = linspace(0,1,num_trajPoints);
-        stpP_combo = stpP_wts.*repmat(endPoint,1,num_trajPoints);
-        waypoints = strP_combo+stpP_combo;
+    startPoint = traj_param.startPoints(:,i);
+    endPoint = traj_param.endPoints(:,i);
+    % waypoints: as convex combination of start and end point
+    num_trajPoints = 5;
+    srtP_wts = linspace(1,0,num_trajPoints);
+    strP_combo = srtP_wts.*repmat(startPoint,1,num_trajPoints);
+    stpP_wts = linspace(0,1,num_trajPoints);
+    stpP_combo = stpP_wts.*repmat(endPoint,1,num_trajPoints);
+    waypoints = strP_combo+stpP_combo;
+
+elseif strcmp(traj_params.traj_type,'slanted_circle')
+    % get traj for slanted circle
+    radius = parameter;
+    traj_params.direction = 1; % direction = +1/-1 for anticlockwise/clockwise
+    traj_params.center = [0; 0]; %% TODO - make it as user input
+    % waypoints [p1,p2,p3,...] where p1 = [x;y;z]      
+    thetas = linspace(0,2*pi,63);
+    % parametric expression for circle in XY-plane
+    x_data = radius*cos(thetas) + traj_params.center(1);
+    y_data = traj_params.direction*radius*sin(thetas) + traj_params.center(2);
+    waypoints = [x_data; y_data; zeros(size(x_data))];
+    % 3D rotation about x-axis
+    rotAngle = pi/6;
+    roataion_mat = [1, 0,             0;
+                    0, cos(rotAngle), -sin(rotAngle);
+                    0, sin(rotAngle), cos(rotAngle)];
+    waypoints = roataion_mat*waypoints;
+    [~,i]=min(waypoints(3,:));
+    waypoints(3,:) = waypoints(3,:)-waypoints(3,i);
+    waypoints = [waypoints(:,i:end), waypoints(:,1:i-1)];
+    traj_params.waypoints = waypoints;
 
 %%%%%%%%%%%%% TODO: add traj for random control inputs %%%%%%%%%%%%%%%%%%%
 % elseif strcmp(traj_params.traj_type,'random')
