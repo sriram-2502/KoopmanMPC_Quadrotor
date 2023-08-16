@@ -1,4 +1,4 @@
-function [t_out, s_out, xtraj_edmd, u_out] = simulation_3d(trajhandle, controlhandle, train_edmd, show_plot)
+function [t_out, s_out, xtraj_edmd, u_out] = simulation_3d(trajhandle, controlhandle, train_edmd, show_plot,flag)
 % NOTE: This srcipt will not run as expected unless you fill in proper
 % code in trajhandle and controlhandle
 % You should not modify any part of this script except for the
@@ -18,6 +18,8 @@ max_time = 50;
 
 % parameters for simulation
 params = sys_params;
+params.flag=flag;
+
 video = false;
 if video
   video_writer = VideoWriter('helice.avi', 'Uncompressed AVI');
@@ -25,16 +27,17 @@ if video
 end
 
 %% **************************** FIGURES *****************************
-disp('Initializing figures...');
-h_fig = figure;
-h_3d = gca;
-axis equal
-grid on
-view(3);
-xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]')
-quadcolors = lines(1);
-
-set(gcf,'Renderer','OpenGL')
+if(show_plot)
+    disp('Initializing figures...');
+    h_fig = figure;
+    h_3d = gca;
+    axis equal
+    grid on
+    view(3);
+    xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]')
+    quadcolors = lines(1);
+    set(gcf,'Renderer','OpenGL')
+end
 
 %% *********************** INITIAL CONDITIONS ***********************
 disp('Setting initial conditions...');
@@ -49,15 +52,11 @@ err = []; % runtime errors
 des_start = trajhandle(0, []);
 des_stop  = trajhandle(inf, []);
 stop_pos  = des_stop.pos;
-
+x0      = init_state(des_start.pos, 0); 
+xtraj   = zeros(max_iter*nstep, length(x0));
 if train_edmd
-    x0      = init_state(des_start.pos, 0); 
     x0_edmd = init_state_edmd(des_start.pos, 0);
-    xtraj   = zeros(max_iter*nstep, length(x0));
     xtraj_edmd   = zeros(max_iter*nstep, length(x0_edmd)); 
-else
-    x0      = init_state(des_start.pos, 0); 
-    xtraj   = zeros(max_iter*nstep, length(x0));
 end
 
 u0 = [0;0;0;0];
@@ -67,6 +66,9 @@ ttraj   = zeros(max_iter*nstep, 1);
 x       = x_init;        % state
 pos_tol = 0.01;
 vel_tol = 0.01;
+
+% get normalized white noise for each state
+params.noise = 0.05*randn([max_iter*nstep,size(x0)]);
 
 %% ************************* RUN SIMULATION *************************
 disp('Simulation Running....');
@@ -89,6 +91,7 @@ for iter = 1:max_iter
     end
 
     % Run simulation (PID)
+    params.noise_idx=iter*nstep;
     [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
     
     if train_edmd
@@ -119,7 +122,7 @@ for iter = 1:max_iter
     time = time + cstep; % Update simulation time
     t = toc;
     % Check to make sure ode45 is not timing out
-    if(t> cstep*50)
+    if(t> cstep*500)
         err = 'Ode45 Unstable';
         break;
     end
@@ -150,8 +153,9 @@ utraj = utraj(1:iter*nstep,:);
 ttraj = ttraj(1:iter*nstep);
 
 % Truncate saved variables
-QP.TruncateHist();
-
+if(show_plot)
+    QP.TruncateHist();
+end
 % Plot position
 % h_pos = figure('Name', ['Quad position']);
 % plot_state(h_pos, QP.state_hist(1:3,:), QP.time_hist, 'pos', 'vic');

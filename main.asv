@@ -18,6 +18,21 @@ mpc_params = get_params();
 show_plot = true;
 mpc_params.use_casadi = false;
 
+%% generate random data
+% % generate random data starting from same initial condition
+% % each traj is generated using contant control input
+% % generate random control inputs to get different trajectories
+% x0 = [0;0;0]; dx0 = [0;0;0];
+% R0 = eye(3); wb0 = [0.1;0;0];
+% X0 = [x0;dx0;R0(:);wb0];
+% dt = 1e-3;
+% t_span = 0.1; % in (s)
+% n_control = 100; % number of random controls to apply
+% t_traj = 0:dt:t_span; % traj length to simulate (s)
+% show_plot = true; 
+% flag = 'train';
+% [X_r, U_r, X1_r, X2_r, U1_r] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
+
 %% generate trajectory data using nominal controller
 traj_params.traj_type = 'slanted_circle';%'hover';%'line';
 % parameter: 
@@ -58,7 +73,7 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 10;
+mpc_params.predHorizon = 5;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
@@ -73,7 +88,15 @@ traj_params.params = 1;
 traj_params.n_traj = length(traj_params.params);
 flag='mpc';
 [T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
-X_ref(4:end,:)=0;
+
+% % get reference trajectory (desired)
+% n_control = 1; % number of random controls to apply
+% % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
+% t_traj = 0:1e-3:10;
+% show_plot = false;
+% flag = 'mpc';
+% [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
+
 % get lifted states
 Z_ref = [];
 X_ref = X_ref(:,2:end);

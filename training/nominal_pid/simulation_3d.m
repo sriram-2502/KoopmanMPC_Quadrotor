@@ -52,15 +52,11 @@ err = []; % runtime errors
 des_start = trajhandle(0, []);
 des_stop  = trajhandle(inf, []);
 stop_pos  = des_stop.pos;
-
+x0      = init_state(des_start.pos, 0); 
+xtraj   = zeros(max_iter*nstep, length(x0));
 if train_edmd
-    x0      = init_state(des_start.pos, 0); 
     x0_edmd = init_state_edmd(des_start.pos, 0);
-    xtraj   = zeros(max_iter*nstep, length(x0));
     xtraj_edmd   = zeros(max_iter*nstep, length(x0_edmd)); 
-else
-    x0      = init_state(des_start.pos, 0); 
-    xtraj   = zeros(max_iter*nstep, length(x0));
 end
 
 u0 = [0;0;0;0];
@@ -70,6 +66,9 @@ ttraj   = zeros(max_iter*nstep, 1);
 x       = x_init;        % state
 pos_tol = 0.01;
 vel_tol = 0.01;
+
+% get normalized white noise for each state
+params.noise = 0.05*randn([max_iter,size(x0)]);
 
 %% ************************* RUN SIMULATION *************************
 disp('Simulation Running....');
@@ -92,6 +91,7 @@ for iter = 1:max_iter
     end
 
     % Run simulation (PID)
+    params.noise_idx = iter;
     [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x);
     
     if train_edmd
