@@ -49,8 +49,8 @@ end
 X_ref = [x_ref;dx_ref;theta_ref;wb_ref];
 
 %% define costs 
-Qx = diag([1e6;1e6;1e6]);
-Qv = diag([1e6;1e6;1e6]);
+Qx = diag([1e4;1e4;1e4]);
+Qv = diag([1e4;1e4;1e4]);
 Qa = 1e6*eye(9);
 Qw = 1e6*eye(9);
 Q_i = 0*eye(size(Z,1));

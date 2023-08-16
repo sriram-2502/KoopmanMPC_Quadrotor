@@ -73,7 +73,7 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 2;
+mpc_params.predHorizon = 35;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
