@@ -52,7 +52,7 @@ for ii = 1:mpc_params.MAX_ITER
     Rot = RPYtoRot_ZXY(theta(1),theta(2),theta(3));
     % use wRb or Rot to get dx in world frame and q for PID 
     % wRB works best for q and dx in slant circle traj
-    q = RotToQuat(wRb);
+    q = RotToQuat(Rot);
     Xt = [x;wRb*dx;q;wb;]; 
     [t,X_pid] = ode45(@(t,s) quadEOM_readonly(t, s, Ut(1), Ut(2:end), quad_params),[tstart,tend],Xt);
     X = parse_edmd(t,X_pid);

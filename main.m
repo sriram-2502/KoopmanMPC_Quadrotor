@@ -39,7 +39,7 @@ traj_params.traj_type = 'slanted_circle';%'hover';%'line';
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = 1;  
+traj_params.params = linspace(0.5,5,10);  
 traj_params.n_traj = length(traj_params.params);
 flag='training';
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
@@ -73,7 +73,7 @@ X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 5;
+mpc_params.predHorizon = 2;
 %params.Tmpc = 1e-3;
 mpc_params.simTimeStep = 1e-2;
 
@@ -84,7 +84,7 @@ mpc_params.SimTimeDuration = 0.5;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
 show_plot = false;
-traj_params.params = 1;  
+traj_params.params = 1.5;  
 traj_params.n_traj = length(traj_params.params);
 flag='mpc';
 [T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);

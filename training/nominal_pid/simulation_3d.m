@@ -68,7 +68,7 @@ pos_tol = 0.01;
 vel_tol = 0.01;
 
 % get normalized white noise for each state
-params.noise = 0.05*randn([max_iter,size(x0)]);
+params.noise = 0.1*randn([max_iter,size(x0)]);
 
 %% ************************* RUN SIMULATION *************************
 disp('Simulation Running....');
