@@ -1,15 +1,16 @@
-1. Multiplication with roataion matrix R (current one is the best)
+Completed tasks:
+- Multiplication with roataion matrix R (current one is the best)
 
-2. write the code for 'line' in 'traj_gen.m' (need to update)
+Priority tasks:
+- Reference for MPC (work in progress)
+- eval A,B from different intial condition and mutliple trajectories
+- tune MPC (work in progress)
+- online learning A, B in MPC
 
-4. Reference for MPC (work in progress)
 
-5. Animations for Koopman/MPC
-
-6. tune MPC (work in progress)
-
-7. regularize A,B in Koopman learning
-
-8. Force structure on A,B
-
-9. online learning A, B in MPC
+Nice to have:
+- regularize A,B in Koopman learning
+- Force structure on A,B
+- Animations for Koopman/MPC
+- write the code for 'line' in 'traj_gen.m' (need to update)
+- 'for loop' in lsqminnorm for EDMD
