@@ -40,7 +40,8 @@ for i=1:length(tsave)
     % x_edmd = [x, xdot_body, R(:), wb] -- 18 states
     % bRw gives best prediction
     % use bRw to take acceleration from world frame to body frame for EDMD 
-    accel_body = bRw*xsave(i,4:6)'; 
+%     accel_body = bRw*xsave(i,4:6)'; 
+    accel_body = xsave(i,4:6)'; 
     x_edmd = [x_edmd; [xsave(i,1:3),accel_body',wRb(:)',xsave(i,end-2:end)]];
 end
 

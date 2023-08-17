@@ -26,14 +26,15 @@ for ii = 1:mpc_params.MAX_ITER
         tic
         [f, G, A, b] = get_QP(EDMD,Z,z_ref,N,mpc_params);
         % solve QP using quadprog     
-        [zval,f_val] = quadprog(G,f,A,b,[],[],[],[]);
+        options = optimoptions('quadprog','MaxIterations',1e4);
+        [zval,f_val] = quadprog(G,f,[],[],[],[],[],[],[],options);
         toc
     end
 
     Ut = zval(1:4);
 
     %% --- simulate without any external disturbances ---
-    %parse true states from lifted states
+    % parse true states from lifted states
     Xt = EDMD.C*Z;
     x = Xt(1:3); dx = Xt(4:6); 
     wRb = reshape(Xt(7:15),[3,3])';
@@ -41,6 +42,10 @@ for ii = 1:mpc_params.MAX_ITER
     wb_hat = reshape(Xt(16:24),[3,3])'; % body frame
     wb = vee_map(wb_hat);
     
+    wRb_ref = reshape(X_ref(7:15),[3,3]);
+    theta_ref = vee_map(logm(wRb_ref));
+    [theta_ref, theta]
+
 %     use dynamics_SRB for ode45
 %     Xt = [x;dx;wRb(:);wb];
 %     [t,X] = ode45(@(t,s) dynamics_SRB(t, s, Ut, quad_params),[tstart,tend],Xt);
@@ -51,9 +56,9 @@ for ii = 1:mpc_params.MAX_ITER
     bRw = wRb';
     Rot = RPYtoRot_ZXY(theta(1),theta(2),theta(3));
     % use wRb or Rot to get dx in world frame and q for PID 
-    % wRB works best for q and dx in slant circle traj
+    % wRb works best for q and dx in slant circle traj
     q = RotToQuat(Rot);
-    Xt = [x;wRb*dx;q;wb;]; 
+    Xt = [x;dx;q;wb]; 
     [t,X_pid] = ode45(@(t,s) quadEOM_readonly(t, s, Ut(1), Ut(2:end), quad_params),[tstart,tend],Xt);
     X = parse_edmd(t,X_pid);
     

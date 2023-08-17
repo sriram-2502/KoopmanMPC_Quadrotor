@@ -14,6 +14,7 @@ addpath('utils');
 real_time = false;
 
 % max time
+% max_time = 50;
 max_time = 50;
 
 % parameters for simulation
@@ -41,7 +42,7 @@ end
 
 %% *********************** INITIAL CONDITIONS ***********************
 disp('Setting initial conditions...');
-tstep    = 0.01; % this determines the time step at which the solution is given
+tstep    = 0.001; % this determines the time step at which the solution is given
 cstep    = 0.05; % image capture time interval
 max_iter = max_time/cstep; % max iteration
 nstep    = cstep/tstep;

@@ -86,14 +86,16 @@ for i = 1:N
     %A_ineq_i = repmat([-1;1],4,1);
     A_ineq_i = kron(eye(4),[-1;1]);
     A_ineq = blkdiag(A_ineq, A_ineq_i);
+    
     % set lower and upper bounds for control inputs
     u_lb = -10.*[0;0.05;0.05;0.05];
     u_ub = 10.*[2;0.05;0.05;0.05];
     
 %     b_ineq_i = [-u_lb; u_ub];
+%     b_ineq_i = repmat(b_ineq_i,4,1);
+    
     b_ineq_i = [-u_lb, u_ub]';
     b_ineq_i = b_ineq_i(:);
-%     b_ineq_i = repmat(b_ineq_i,4,1);
     b_ineq = [b_ineq; b_ineq_i];
 
 end

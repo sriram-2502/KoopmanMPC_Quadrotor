@@ -18,23 +18,8 @@ mpc_params = get_params();
 show_plot = true;
 mpc_params.use_casadi = false;
 
-%% generate random data
-% % generate random data starting from same initial condition
-% % each traj is generated using contant control input
-% % generate random control inputs to get different trajectories
-% x0 = [0;0;0]; dx0 = [0;0;0];
-% R0 = eye(3); wb0 = [0.1;0;0];
-% X0 = [x0;dx0;R0(:);wb0];
-% dt = 1e-3;
-% t_span = 0.1; % in (s)
-% n_control = 100; % number of random controls to apply
-% t_traj = 0:dt:t_span; % traj length to simulate (s)
-% show_plot = true; 
-% flag = 'train';
-% [X_r, U_r, X1_r, X2_r, U1_r] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
-
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'slanted_circle';%'hover';%'line';
+traj_params.traj_type = 'line';%'hover';%'line';
 % parameter: 
 % hover:-> height
 % circle:-> radius
@@ -49,57 +34,51 @@ n_basis = 3; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;
+A_minnorm = EDMD.A_minnorm;
+B_minnorm = EDMD.B_minnorm;
 C = EDMD.C;
 Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
 EDMD.n_basis = n_basis;
 
-%% One timestep prediction
-% Z2_predicted = A*Z1 + B*U1;
-% X_ref=[]; X_pred=[];
-% for i = 1:length(Z2_predicted)
-%     X_ref = [X_ref, EDMD.C*Z2(:,i)];
-%     X_pred = [X_pred, EDMD.C*Z2_predicted(:,i)];
-% end
-% RMSE_training = rmse(X_pred,X_ref,traj_params.traj_len,show_plot);
-
 %% evaluate EDMD prediction for n timesteps
 show_plot = true;
 flag='eval';
-traj_params.params = 1;  
+traj_params.params = 1.5;  
 traj_params.n_traj = length(traj_params.params);
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 35;
-%params.Tmpc = 1e-3;
-mpc_params.simTimeStep = 1e-2;
-
+mpc_params.predHorizon = 10;
+mpc_params.simTimeStep = 1e-3;
 dt_sim = mpc_params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 0.5;  % [sec]
+mpc_params.SimTimeDuration = 0.1;  % [sec]
 mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
 
+% get reference trajectory
 show_plot = false;
-traj_params.params = 1.5;  
+traj_params.params = 1.75;  
 traj_params.n_traj = length(traj_params.params);
 flag='mpc';
 [T, X_ref, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 
-% % get reference trajectory (desired)
-% n_control = 1; % number of random controls to apply
-% % t_traj = 0:params.Tmpc:10; % traj length to simulate (s)
-% t_traj = 0:1e-3:10;
-% show_plot = false;
-% flag = 'mpc';
-% [X_ref] = get_rnd_trajectories(X0,n_control,t_traj,show_plot,flag);
+% reduce number of refernce points in the trajectory
+% hold_for = 5;%mpc_params.predHorizon;
+% remove_num = mod(size(X_ref,2),hold_for);
+% X_ref_hold = zeros(size(X_ref,1),size(X_ref,2)-remove_num);
+% for i=hold_for:hold_for:size(X_ref,2)
+%     X_ref_hold(:,i-(hold_for-1):i) = repmat(X_ref(:,i),1,hold_for);
+% end
 
 % get lifted states
 Z_ref = [];
+X0 = X_ref(:,1);
 X_ref = X_ref(:,2:end);
+% X_ref = X_ref_hold(:,2:end);
 for i = 1:length(X_ref) % compare n+1 timesteps
     x_des = X_ref(:,i);
     basis = get_basis(x_des,n_basis);
@@ -107,7 +86,6 @@ for i = 1:length(X_ref) % compare n+1 timesteps
     Z_ref = [Z_ref,z];
 end
 
-X0 = X_ref(:,1);
 basis = get_basis(X0,n_basis);
 Z0 = [X0(1:3); X0(4:6); basis];
 

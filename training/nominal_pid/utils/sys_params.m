@@ -1,8 +1,9 @@
 function params = sys_params()
 % SYS_PARAMS basic parameters for the quadrotor
 
-m = 0.18; % kg
 g = 9.81; % m/s/s
+
+m = 0.18; % kg
 I = [0.00025,   0,          2.55e-6;
      0,         0.000232,   0;
      2.55e-6,   0,          0.0003738];
