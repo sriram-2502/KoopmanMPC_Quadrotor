@@ -18,7 +18,8 @@ ylabel('$x$','FontSize',20, 'Interpreter','latex')
 box on; axes.LineWidth=2;
 if(strcmp(flag,'mpc'))
     lgd = legend('reference','MPC');
-    
+elseif (strcmp(flag,'compare'))
+    lgd = legend('pid2srb','srb');
 else
     lgd = legend('true','predicted');
 end
@@ -70,7 +71,7 @@ xlim([0,SimTimeDuration]);
 %angular states
 subplot(6,4,2)
 plot(tout, theta_ref(1,:)); hold on; 
-plot(tout, theta(1,:),'--'); hold on;
+plot(tout, theta(1,:),'-'); hold on;
 ylabel('$\theta$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
@@ -78,7 +79,7 @@ xlim([0,SimTimeDuration]);
 
 subplot(6,4,6)
 plot(tout, theta_ref(2,:)); hold on; 
-plot(tout, theta(2,:),'--'); hold on;
+plot(tout, theta(2,:),'-'); hold on;
 ylabel('$\phi$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
@@ -86,7 +87,7 @@ xlim([0,SimTimeDuration]);
 
 subplot(6,4,10)
 plot(tout, theta_ref(3,:)); hold on; 
-plot(tout, theta(3,:),'--'); hold on;
+plot(tout, theta(3,:),'-'); hold on;
 ylabel('$\psi$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
@@ -94,7 +95,7 @@ xlim([0,SimTimeDuration]);
 
 subplot(6,4,14)
 plot(tout, wb_ref(1,:)); hold on;
-plot(tout, wb(1,:),'--'); hold on;
+plot(tout, wb(1,:),'-'); hold on;
 ylabel('$\omega_x$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
@@ -102,7 +103,7 @@ xlim([0,SimTimeDuration]);
 
 subplot(6,4,18)
 plot(tout, wb_ref(2,:)); hold on;
-plot(tout, wb(2,:),'--'); hold on;
+plot(tout, wb(2,:),'-'); hold on;
 ylabel('$\omega_y$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
@@ -110,7 +111,7 @@ xlim([0,SimTimeDuration]);
 
 subplot(6,4,22)
 plot(tout, wb_ref(3,:)); hold on;
-plot(tout, wb(3,:),'--'); hold on;
+plot(tout, wb(3,:),'-'); hold on;
 xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
 ylabel('$\omega_z$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
