@@ -28,16 +28,28 @@ elseif strcmp(traj_params.traj_type,'circle')
 
 elseif strcmp(traj_params.traj_type,'line')
     % get traj for slanted line
-    % incomplete code, need to check
-    startPoint = traj_param.startPoints(:,i);
-    endPoint = traj_param.endPoints(:,i);
-    % waypoints: as convex combination of start and end point
-    num_trajPoints = 5;
-    srtP_wts = linspace(1,0,num_trajPoints);
-    strP_combo = srtP_wts.*repmat(startPoint,1,num_trajPoints);
-    stpP_wts = linspace(0,1,num_trajPoints);
-    stpP_combo = stpP_wts.*repmat(endPoint,1,num_trajPoints);
-    waypoints = strP_combo+stpP_combo;
+%     % incomplete code, need to check
+%     startPoint = traj_param.startPoints(:,i);
+%     endPoint = traj_param.endPoints(:,i);
+%     % waypoints: as convex combination of start and end point
+%     num_trajPoints = 5;
+%     srtP_wts = linspace(1,0,num_trajPoints);
+%     strP_combo = srtP_wts.*repmat(startPoint,1,num_trajPoints);
+%     stpP_wts = linspace(0,1,num_trajPoints);
+%     stpP_combo = stpP_wts.*repmat(endPoint,1,num_trajPoints);
+%     waypoints = strP_combo+stpP_combo;
+    height = parameter;
+    % waypoints [p1,p2,p3,...] where p1 = [x;y;z]
+    waypoints = zeros(3);
+    waypoints(end,:) = linspace(0,height,3);
+    
+    % 3D rotation about x-axis
+    rotAngle = pi/6;
+    roataion_mat = [1, 0,             0;
+                    0, cos(rotAngle), -sin(rotAngle);
+                    0, sin(rotAngle), cos(rotAngle)];
+
+    traj_params.waypoints = roataion_mat*waypoints;
 
 elseif strcmp(traj_params.traj_type,'slanted_circle')
     % get traj for slanted circle
