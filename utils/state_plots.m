@@ -23,7 +23,7 @@ elseif (strcmp(flag,'compare'))
 else
     lgd = legend('true','predicted');
 end
-lgd.Location = 'northoutside';
+lgd.Location = 'best';
 lgd.NumColumns = 2;
 xlim([0,SimTimeDuration]);
 
