@@ -1,4 +1,4 @@
-function [x_edmd, usave] = parse_edmd(tsave, xsave, controlhandle, trajhandle, params)
+function [x_edmd, usave] = parse_edmd_pid(tsave, xsave, controlhandle, trajhandle, params)
 %function [tsave, xsave] = ode45(@(t,s) quadEOM(t, s, controlhandle, trajhandle, params), timeint, x)
 % inputs: 
 % f_handle- function handle for dynamics
@@ -37,12 +37,8 @@ for i=1:length(tsave)
     bRw = QuatToRot(quat);
     wRb = bRw';
 
-    % x_edmd = [x, xdot_body, R(:), wb] -- 18 states
-    % bRw gives best prediction
-    % use bRw to take acceleration from world frame to body frame for EDMD 
-%     accel_body = bRw*xsave(i,4:6)'; 
-    accel_body = xsave(i,4:6)'; 
-    x_edmd = [x_edmd; [xsave(i,1:3),accel_body',wRb(:)',xsave(i,end-2:end)]];
+    % x_edmd = [x, xdot, wRb(:), wb] -- 18 states
+    x_edmd = [x_edmd; [xsave(i,1:6),wRb(:)',xsave(i,end-2:end)]];
 end
 
 usave = usave';

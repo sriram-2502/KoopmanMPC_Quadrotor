@@ -15,7 +15,7 @@ real_time = false;
 
 % max time
 % max_time = 50;
-max_time = 50;
+max_time = 500;
 
 % parameters for simulation
 params = sys_params;
@@ -97,7 +97,7 @@ for iter = 1:max_iter
     
     if train_edmd
     % parse x_pid to get x_EDMD and usave (to use in EDMD training and MPC) 
-        [x_edmd, usave] = parse_edmd(tsave, xsave, controlhandle, trajhandle, params);
+        [x_edmd, usave] = parse_edmd_pid(tsave, xsave, controlhandle, trajhandle, params);
     else
     % use xsave to get usave 
         usave = zeros(length(tsave),length(u0));

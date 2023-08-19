@@ -22,10 +22,8 @@ Z1 = []; Z2 = [];
 % Zn = [Zt_1; Zt_2; ... Zt_n]
 for i = 1:length(X1)
     x1 = X1(:,i); x2 = X2(:,i);
-    basis1 = get_basis(x1,n_basis);
-    basis2 = get_basis(x2,n_basis);
-    z1 = [x1(1:3); x1(4:6); basis1];
-    z2 = [x2(1:3); x2(4:6); basis2];
+    z1 = get_basis(x1,n_basis);
+    z2 = get_basis(x2,n_basis);
     Z1 = [Z1, z1]; Z2 = [Z2, z2];
 end
 
@@ -42,8 +40,9 @@ A = (Z2*Z1_aug')./m;
 G = (Z1_aug*Z1_aug')./m;
 
 % mapping matrix X = CZ 
-C = zeros(24,size(Z1,1)); 
-C(1:24,1:24)=eye(24); 
+% X_PID: [x; dx; q; wb] => 13 X 1
+C = zeros(13,size(Z1,1)); 
+C(1:13,1:13)=eye(13); 
 
 % K*G = A
 EDMD.K = A*pinv(G);

@@ -1,4 +1,4 @@
-function params = get_params()
+function param = get_params()
 % Output
 % parameters for the quadrotor
 % params.m          - mass of the quadrotor
@@ -16,17 +16,23 @@ function params = get_params()
 %      2.55e-6,   0,          0.0003738];
 
 % reference - Geometric Tracking Control of a Quadrotor UAV on SE(3)
-m = 4.34; % kg
-J = diag([0.0820, 0.0845, 0.1377]);
+% Quadrotor
+J1 = 0.02;
+J2 = 0.02;
+J3 = 0.04;
+param.J = diag([J1, J2, J3]);
 
-% db = 0.315; % distance between the com and rotors
-% c_torque = 8.004e-4; % torque constrant
+param.m = 2;
 
-g = 9.81; % gravity
+param.d = 0.169;
+param.ctf = 0.0135;
 
-params.mass = m;
-params.J = J;
-%params.d = db;
-%params.c_troque = c_torque;
-params.g = g;
+% Fixed disturbance
+% param.x_delta = [0.5, 0.8, -1]';
+% param.R_delta = [0.2, 1.0, -0.1]';
+param.x_delta = [0, 0, 0]';
+param.R_delta = [0, 0, 0]';
+
+% Other parameters
+param.g = 9.81;
 

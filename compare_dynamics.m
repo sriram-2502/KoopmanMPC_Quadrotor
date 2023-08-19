@@ -2,43 +2,74 @@ clc; clear; close all;
 % import functions
 addpath dynamics edmd mpc utils training
 addpath(genpath('training'))
+addpath('training/aux_functions');
+addpath('training/test_functions');
 
-show_plot = true;
-dt_sim = 0.001;
+dt_sim = 0.01;
 
+%% get PID trajectories
+% traj_params.traj_type = 'circle';%'hover';%'line';
+% % parameter: 
+% % hover:-> height
+% % circle:-> radius
+% % line:-> end point
+% traj_params.params = linspace(0.5,1,1);  
+% traj_params.n_traj = length(traj_params.params);
+% flag='notraining';
+% % get U from PID dynamics
+% [T, X_PID, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
+% 
+% % simulate dynamics_SRB
+% tstart = 0;
+% tend = dt_sim;
+% 
+% quad_params = sys_params;
+% Xt = X_PID(:,1); X_SRB =[];
+% for ii = 1:length(T)
+%     
+%     Ut = U(:,ii);
+%     [t,X] = ode45(@(t,x) dynamics_SRB(t, x, Ut, quad_params),[tstart,tend],Xt);
+%     Xt = X(end,:)';
+% 
+%     tstart = tend;
+%     tend = tstart + dt_sim;
+% 
+%     X_SRB = [X_SRB,X(end,:)'];
+% end
+% X_SRB = X_SRB';
+% X_PID2SRB = parse_edmd(T,X_PID');
+
+%% get geometric trajectories
 traj_params.traj_type = 'line';%'hover';%'line';
 % parameter: 
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = linspace(0.5,5,1);  
+traj_params.params = 2;  
 traj_params.n_traj = length(traj_params.params);
 flag='notraining';
+show_plot = true;
 % get U from PID dynamics
-[T, X_PID, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
+[T, X_geometric] = get_geometric_trajectories(traj_params,show_plot,flag);
 
 % simulate dynamics_SRB
-tstart = 0;
-tend = dt_sim;
-
-quad_params = sys_params;
-Xt = X_PID(:,1); X_SRB =[];
-for ii = 1:length(T)
-    
-    Ut = U(:,ii);
-    [t,X] = ode45(@(t,x) dynamics_SRB(t, x, Ut, quad_params),[tstart,tend],Xt);
-    Xt = X(end,:)';
-
-    tstart = tend;
-    tend = tstart + dt_sim;
-
-    X_SRB = [X_SRB,X(end,:)'];
-end
+trajhandle = @command_line;
+controlhandle = @position_control;
+params = get_params();
+[k, params] = get_control_gains(params);
+params.height = 2;
+X0 = [X_geometric(:,1);zeros(6,1)]'; 
+t = 0:0.01:10;
+[T_SRB, X_SRB] = ode45(@(t, XR) dynamics_SRB(t, XR, k, params, trajhandle, controlhandle), t, X0, ...
+odeset('RelTol', 1e-6, 'AbsTol', 1e-6));
+ 
 X_SRB = X_SRB';
-X_PID2SRB = parse_edmd(T,X_PID');
+X_geometric2SRB = parse_edmd_geometric(T,X_geometric');
+X_PID2SRB = X_geometric2SRB;
 
 %% plots
 % parse each state for plotting
+close all;
 x_srb=[]; dx_srb = []; theta_srb =[]; wb_srb=[];
 x_pid2srb=[]; dx_pid2srb = []; theta_pid2srb =[]; wb_pis2srb=[];
 X_srb = []; X_pid2srb = [];

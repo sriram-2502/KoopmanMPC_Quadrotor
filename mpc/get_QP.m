@@ -28,37 +28,41 @@ C = EDMD.C;
 n = size(A,2); % state dimension columns (n x n)
 
 %% get current and desired states
-% get X from lifted states Z = [x dx R' w' Rw Rw^2 ...]
-X = C*Z;
-x = X(1:3); dx = X(4:6); 
-R = reshape(X(7:15),[3,3]);
-theta = vee_map(logm(R')); 
-wb_hat = reshape(X(16:24),[3,3]); % body frame
-wb = vee_map(wb_hat');
-X_cur = [x;dx;theta;wb];
-
-for i =1:N
-    X_ref = C*Z_ref(:,i);
-    x_ref = X_ref(1:3); dx_ref = X_ref(4:6);
-    theta_ref =[ ]; wb_ref = [];
-    R_ref = reshape(X_ref(7:15),[3,3]);
-    theta_ref = [theta_ref, vee_map(logm(R_ref'))]; 
-    wb_hat_ref = reshape(X_ref(16:24),[3,3]); % body frame
-    wb_ref = [wb_ref, vee_map(wb_hat_ref')];
-end
-X_ref = [x_ref;dx_ref;theta_ref;wb_ref];
+% % get X from lifted states Z = [x dx R' w' Rw Rw^2 ...]
+% X = C*Z;
+% x = X(1:3); dx = X(4:6); 
+% q = X(7:10);
+% bRw = QuatToRot(q);
+% [roll,pitch,yaw] = RotToRPY_ZXY(bRw);
+% theta = [roll,pitch,yaw]';
+% wb = X(11:13); 
+% X_cur = [x;dx;theta;wb];
+% 
+% x_ref=[]; dx_ref=[];
+% theta_ref =[ ]; wb_ref = [];
+% for i =1:N
+%     X_ref = C*Z_ref(:,i); % get X_ref from parse_edmd (C*Z_ref) states
+%     x_ref = [x_ref,X_ref(1:3)];
+%     dx_ref = [dx_ref,X_ref(4:6)];
+%     q_ref = X_ref(7:10,i);
+%     bRw_ref = QuatToRot(q_ref);
+%     [roll_ref,pitch_ref,yaw_ref] = RotToRPY_ZXY(bRw_ref);
+%     theta_ref = [theta_ref, [roll_ref,pitch_ref,yaw_ref]'];
+%     wb_ref = [wb_ref, X_ref(11:13,i)]; 
+% end
+% X_ref = [x_ref;dx_ref;theta_ref;wb_ref]; %going back to PID states for simulation
 
 %% define costs 
-Qx = diag([1e4;1e4;1e4]);
-Qv = diag([1e4;1e4;1e4]);
-Qa = 1e6*eye(9);
-Qw = 1e6*eye(9);
+Qx = diag([1e6;1e6;1e6]);
+Qv = diag([1e5;1e5;1e6]);
+Qa = 1e5*eye(3);
+Qw = 1e5*eye(3);
 Q_i = 0*eye(size(Z,1));
-Q_i(1:24,1:24) = blkdiag(Qx, Qv, Qa, Qw);
+Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e-6;1e0;1e0;1e0]);
+R_i = diag([1e1;1e0;1e0;1e0]);
 % R_i = diag([1e2;1e2;1e2;1e2]);
 
 %% Build QP Matrices

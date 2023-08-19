@@ -19,15 +19,14 @@ for j=1:length(t_len)-1
     
     % get z0
     X0 = X(:,start_idx);
-    basis = get_basis(X0,n_basis);
-    z0 = [X0(1:3); X0(4:6); basis];
+    z0 = get_basis(X0,n_basis);
     
     % propagate z0 for prediction
     Z_pred = [];
     n_prediction = traj_params.eval_traj_len(j); % 100 timesteps
     z = z0; Z_pred = [z0]; % add initial
     for i = start_idx:start_idx+n_prediction-1 % -1 to for n_prediction number of evaluations
-        z_next = A*z + B*U(:,i);
+        z_next = A*z + B*U(:,i); % Incomplete: get U as state-feedback
         z = z_next;
         Z_pred = [Z_pred,z];
     end
@@ -36,8 +35,7 @@ for j=1:length(t_len)-1
     Z_true = [];
     for i = start_idx:start_idx+n_prediction % n_prediction+1 number of evaluations
         x = X(:,i);
-        basis = get_basis(x,n_basis);
-        z = [x(1:3); x(4:6); basis];
+        z = get_basis(x,n_basis);
         Z_true = [Z_true,z];
     end
 
@@ -53,5 +51,5 @@ for j=1:length(t_len)-1
     
 end
 traj_params.eval_traj_len = traj_params.eval_traj_len+1;
-RMSE = rmse(X_pred,X_ref,traj_params.eval_traj_len,show_plot) % +1 to account for initial conditions
+RMSE = rmse(X_pred,X_ref,traj_params.eval_traj_len,show_plot) % 
 
