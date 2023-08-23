@@ -20,7 +20,7 @@ function [F, G, A_ineq, b_ineq] = get_QP(EDMD,Z,Z_ref,N,params)
 % b_ineq (augmented ineq constraint b)      : 2(p+m)(N) x 1
 % augmented ineq constraint                 : A_ineq * X <= b_ineq
 
-%% get system matrices
+%% get system matrices %
 % define friction constraints 
 A = EDMD.A;
 B = EDMD.B;
