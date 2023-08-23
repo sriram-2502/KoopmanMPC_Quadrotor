@@ -105,11 +105,11 @@ r3des_ddot = des_state.acc(3)+Kdz*(des_state.vel(3)-state.vel(3))+Kpz*(des_state
 phi_des   	= (r1des_ddot*des_state.yaw - r2des_ddot)/params.gravity ;
 theta_des 	= (r1des_ddot + r2des_ddot*des_state.yaw)/params.gravity ;
 
-M =[Kpphi*(phi_des-state.rot(1)) + Kdphi*(0-state.omega(1));
+M =([Kpphi*(phi_des-state.rot(1)) + Kdphi*(0-state.omega(1));
 	Kptheta*(theta_des-state.rot(2)) + Kdtheta*(0-state.omega(2));
-	Kppsi*(des_state.yaw-state.rot(3)) + Kdpsi*(des_state.yawdot-state.omega(3))];
+	Kppsi*(des_state.yaw-state.rot(3)) + Kdpsi*(des_state.yawdot-state.omega(3))]);
 
-F = params.mass*(params.gravity+r3des_ddot);
+F = (params.mass*(params.gravity+r3des_ddot));
 
 
 end

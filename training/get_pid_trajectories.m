@@ -34,7 +34,7 @@ for i=1:traj_params.n_traj
     % simulate ode
     % state - n x 13, with each row having format [x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r]
     % control - n x 4 with each row having format [f_next, M1, M2, M3]
-    [t, x_pid, x_edmd, u] = simulation_3d(trajhandle, controlhandle, train_edmd,show_plot,flag);
+    [t, x_pid, x_edmd, u] = simulation_3d(trajhandle, controlhandle, train_edmd, show_plot, flag);
     
     % remove the first and the last parts of the trajcetory (to avoid rapid
     % changes in inputs)

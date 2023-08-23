@@ -38,6 +38,8 @@ n1 = size(Z1,1); n2 = size(U1,1); % size of K: n1 X n2
 m = size(Z1,2); % avg over number of data points
 A = (Z2*Z1_aug')./m;
 G = (Z1_aug*Z1_aug')./m;
+EDMD.Inter_A = A;
+EDMD.Inter_G = G;
 
 % mapping matrix X = CZ 
 % X_PID: [x; dx; q; wb] => 13 X 1

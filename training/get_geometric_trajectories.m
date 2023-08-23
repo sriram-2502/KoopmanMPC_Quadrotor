@@ -1,4 +1,4 @@
-function [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot)
+function [T, X_geometric, X, U, X1, X2, U1, U2, traj_params] = get_geometric_trajectories(traj_params,show_plot,flag)
 % function to random trajectories
 % Inputs
 % traj_params        : structure of required trajectory parameters
@@ -9,8 +9,8 @@ function [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_para
 % size of U         : 4 * (n_control x len(t_traj))
 
 
-addpath('nominal_pid/utils');
-addpath('nominal_pid');
+addpath('training/aux_functions');
+addpath('training/test_functions');
 train_edmd = true; 
 
 %% simulate a pid controller to follow waypoints
@@ -19,31 +19,30 @@ train_edmd = true;
 T = [];
 X = []; X1=[]; X2=[];
 U = []; U1=[]; U2=[];
-X_pid = [];
+X_geometric =[];
 traj_params.traj_len = [];
 
+trajhandle = @command_line;
+controlhandle = @position_control;
+
 for i=1:traj_params.n_traj
-    % get waypoints for each traj
-    traj_params = traj_gen(traj_params,traj_params.params(i));
-    trajhandle = @traj_generator;
-    trajhandle([],[],traj_params.waypoints);
-
-    % get control
-    controlhandle = @controller;   
-
+    height = traj_params.params(i);
     % simulate ode
-    % state - n x 13, with each row having format [x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r]
-    % control - n x 4 with each row having format [f_next, M1, M2, M3]
-    [t, x_pid, x_edmd, u] = simulation_3d(trajhandle, controlhandle, train_edmd,show_plot);
+    % x_geometric = [xdot; vdot; Wdot; reshape(Rdot,9,1); ei_dot; eI_dot];
+    % control - n x 4 with each row having format [f_net, M1, M2, M3]
+    [t, x_geometric, x_edmd, u] = simulate_geometric(trajhandle,controlhandle,show_plot, height);
+    
+    x_geometric = parse_edmd_geometric(t, x_geometric);
     % remove the first and the last parts of the trajcetory (to avoid rapid
     % changes in inputs)
-    t = t(150:end-150);
-    x_pid = x_pid(150:end-150,:);
-    x_edmd = x_edmd(150:end-150,:);
-    u = u(150:end-150,:);
+    start_idx = 1; end_idx=length(t)-0;
+    t = t(start_idx:end_idx);
+    x_geometric = x_geometric(start_idx:end_idx,:);
+    x_edmd = x_edmd(start_idx:end_idx,:);
+    u = u(start_idx:end_idx,:);
 
     T = [T, t'];
-    X_pid = [X_pid, x_pid'];
+    X_geometric = [X_geometric, x_geometric'];
     traj_params.traj_len = [traj_params.traj_len; length(t)];
     if(train_edmd)  
         % collect data

@@ -61,16 +61,16 @@ n = size(A,2); % state dimension columns (n x n)
 % X_ref = [x_ref;dx_ref;theta_ref;wb_ref]; %going back to PID states for simulation
 
 %% define costs 
-Qx = diag([1e6;1e6;1e6]);
+Qx = diag([1e5;1e5;1e5]);
 Qv = diag([1e5;1e5;1e6]);
-Qa = 1e5*eye(3);
+Qa = 1e2*eye(3);
 Qw = 1e5*eye(3);
 Q_i = 0*eye(size(Z,1));
 Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e1;1e3;1e3;1e3]);
+R_i = diag([1e1;1e6;1e6;1e6]);
 % R_i = diag([1e2;1e2;1e2;1e2]);
 
 %% Build QP Matrices

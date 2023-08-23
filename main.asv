@@ -24,13 +24,13 @@ traj_params.traj_type = 'line';%'hover';%'line';
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = linspace(0.5,5,10);  
+traj_params.params = linspace(0.5,2.5,10);  
 traj_params.n_traj = length(traj_params.params);
 flag='training';
 [T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
 
 %% get EDMD matrices
-n_basis = 3; % n=3 works best
+n_basis = 2; % n=3 works best
 EDMD = get_EDMD(X1, X2, U1, n_basis);
 A = EDMD.A;
 B = EDMD.B;
