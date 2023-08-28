@@ -92,7 +92,7 @@ mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref_mpc,n_basis,mpc_params);
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x_mpc=[]; dx_mpc = []; theta_mpc =[]; wb_mpc=[];
 X_ref_plot = []; X_mpc = []; t_plot = [];
-skip_idx=10;
+skip_idx=10; 
 for i = 1:skip_idx:length(mpc.t)
     x_ref = [x_ref, mpc.X_ref(i,1:3)'];
     dx_ref = [dx_ref, mpc.X_ref(i,4:6)'];

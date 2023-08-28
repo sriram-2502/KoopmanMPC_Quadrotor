@@ -28,10 +28,14 @@ for ii = 1:mpc_params.MAX_ITER
     else
         tic
         [f, G, A, b, EDMD] = get_QP(EDMD,Z,z_ref,N,mpc,mpc_params);
-        % solve QP using quadprog     
-        options = optimoptions('quadprog','MaxIterations',1e4);
-        [zval,f_val] = quadprog(G,f,A,b,[],[],[],[],[],options);
-        toc
+        if any([any(isinf(f)), any(isnan(f)), any(isinf(G)), any(isnan(G)), any(isinf(A)), any(isnan(A)), any(isinf(b)), any(isnan(b))])
+            fprintf('MATRICES ARE NOT REAL VALUED')
+        elseif isreal(f) && isreal(G) && isreal(A) && isreal(b)
+            % solve QP using quadprog
+            options = optimoptions('quadprog','MaxIterations',1e4);
+            [zval,f_val] = quadprog(G,f,A,b,[],[],[],[],[],options);
+            toc
+        end
     end
 
     Ut = zval(1:4)
@@ -48,8 +52,16 @@ for ii = 1:mpc_params.MAX_ITER
     % velocities]
     Xt = [x;dx;q;wb];    
      
-    [t,X_pid] = ode45(@(t,s) quadEOM_readonly(t, s, Ut(1), Ut(2:end), quad_params),[tstart,tend],Xt);
-    X = parse_edmd_pid(t,X_pid);
+%     % PID dynamcis for actual trajectory
+%     [t,X_pid] = ode45(@(t,s) quadEOM_readonly(t, s, Ut(1), Ut(2:end), quad_params),[tstart,tend],Xt);
+%     X = parse_edmd_pid(t,X_pid);
+
+    % Koopman linear dynamics for actual trajectory
+    z_pred = EDMD.A*Z + EDMD.B*Ut;
+    t = [tstart, tend];
+    X_edmd = (EDMD.C*[Z, z_pred])';
+    X = parse_edmd_pid(t,X_edmd);
+    
     
     %% --- update ---
     Xt = X(end,:)'; % Xt for EDMD (in body frame)

@@ -15,7 +15,7 @@ traj_params.eval_traj_len = 50*ones(size(traj_len));% part of the trajectory use
 
 %loop for each traj
 for j=1:length(t_len)-1
-    start_idx = sum(t_len(1:j))+1;
+    start_idx = sum(t_len(1:j))+1 +500;
     
     % get z0
     X0 = X(:,start_idx);
