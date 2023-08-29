@@ -1,4 +1,4 @@
-function [t, X_geometric, X_edmd, U]=simulate_geometric(trajhandle,controlhandle,show_plot, height)
+function [t, X_geometric]=simulate_geometric(trajhandle,controlhandle,noise_flag,show_plot, height)
 % 
 % Copyright (c) 2020 Flight Dynamics and Control Lab
 % 
@@ -25,12 +25,11 @@ addpath('aux_functions');
 addpath('test_functions');
 
 %% Simulation parameters
-t = 0:0.01:10;
+% t = 0:0.01:10; % original setup
+t = 0:1e-3:5;
 N = length(t);
 
-param = get_params();
-param.x_delta = zeros(3,1);
-param.R_delta = zeros(3,1);
+param = get_params(noise_flag);
 [k, param] = get_control_gains(param);
 param.height=height;
 
@@ -45,7 +44,7 @@ X0 = [x0; v0; W0; reshape(R0,9,1); zeros(6,1)];
 [t, X_geometric] = ode45(@(t, XR) eom(t, XR, k, param, trajhandle, controlhandle), t, X0, ...
     odeset('RelTol', 1e-6, 'AbsTol', 1e-6));
 
-[X_edmd, U] = parse_edmd_geometric(t, X_geometric, trajhandle, controlhandle, k, param);
+% [X_edmd, U] = parse_edmd_geometric(t, X_geometric, trajhandle, controlhandle, k, param);
 
 %% Post processing
 if show_plot

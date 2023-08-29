@@ -1,27 +1,23 @@
-function RMSE = rmse(X,X_ref,traj_len,show_plot)
+function RMSE = rmse(X_pred,X_true,traj_len,show_plot)
 
 % parse each state
-x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
-x=[]; dx = []; theta =[]; wb=[];
+x_true=[]; dx_true = []; theta_true =[]; wb_true=[];
+x_pred=[]; dx_pred = []; theta_pred =[]; wb_pred=[];
 
-for i = 1:size(X,2)
+for i = 1:size(X_pred,2)
     % for reference
-    x_ref = [x_ref, X_ref(1:3,i)];
-    dx_ref = [dx_ref, X_ref(4:6,i)];
-    q_ref = X_ref(7:10,i);
-    bRw_ref = QuatToRot(q_ref);
-    [roll_ref,pitch_ref,yaw_ref] = RotToRPY_ZXY(bRw_ref);
-    theta_ref = [theta_ref, [roll_ref,pitch_ref,yaw_ref]'];
-    wb_ref = [wb_ref, X_ref(11:13,i)]; 
+    x_true = [x_true, X_true(1:3,i)];
+    dx_true = [dx_true, X_true(4:6,i)];
+    bRw_ref = reshape(X_true(10:18,i),[3,3]);
+    theta_true = [theta_true, vee_map(logm(bRw_ref))];
+    wb_true = [wb_true, X_true(7:9,i)]; 
 
     % for prediction
-    x = [x, X(1:3,i)];
-    dx = [dx, X(4:6,i)];
-    q = X(7:10,i);
-    bRw = QuatToRot(q);
-    [roll,pitch,yaw] = RotToRPY_ZXY(bRw);
-    theta = [theta, [roll,pitch,yaw]'];
-    wb = [wb, X(11:13,i)];
+    x_pred = [x_pred, X_pred(1:3,i)];
+    dx_pred = [dx_pred, X_pred(4:6,i)];
+    bRw = reshape(X_pred(10:18,i),[3,3]);
+    theta_pred = [theta_pred, vee_map(logm(bRw))];
+    wb_pred = [wb_pred, X_pred(7:9,i)];
 end
 
 x_err = []; dx_err = []; theta_err = []; wb_err = [];
@@ -35,34 +31,33 @@ for j=1:length(traj_len)-1
     end_idx = sum(traj_len(1:j+1));
 
     % parse states
-    x_ref_j = x_ref(:,start_idx:end_idx);
-    dx_ref_j = dx_ref(:,start_idx:end_idx);
-    theta_ref_j = theta_ref(:,start_idx:end_idx);
-    wb_ref_j = wb_ref(:,start_idx:end_idx);
+    x_true_j = x_true(:,start_idx:end_idx);
+    dx_true_j = dx_true(:,start_idx:end_idx);
+    theta_true_j = theta_true(:,start_idx:end_idx);
+    wb_true_j = wb_true(:,start_idx:end_idx);
 
     % for prediction
-    x_j = x(:,start_idx:end_idx);
-    dx_j = dx(:,start_idx:end_idx);
-    theta_j = theta(:,start_idx:end_idx);
-    wb_j = wb(:,start_idx:end_idx);
+    x_pred_j = x_pred(:,start_idx:end_idx);
+    dx_pred_j = dx_pred(:,start_idx:end_idx);
+    theta_pred_j = theta_pred(:,start_idx:end_idx);
+    wb_pred_j = wb_pred(:,start_idx:end_idx);
 
     % get rmse for each trajectory
-    x_error = x_ref_j(:) - x_j(:);
-    x_mse = sqrt(mean(x_error.^2))/length(X);
+    x_error = x_true_j(:) - x_pred_j(:);
+    x_mse = sqrt(mean(x_error.^2))/length(X_pred);
     RMSE.x = x_mse;
 
-    dx_error = dx_ref_j(:) - dx_j(:);
-    dx_mse = sqrt(mean(dx_error.^2))/length(X);
+    dx_error = dx_true_j(:) - dx_pred_j(:);
+    dx_mse = sqrt(mean(dx_error.^2))/length(X_pred);
     RMSE.dx = dx_mse;
 
-    theta_error = theta_ref_j(:) - theta_j(:);
-    theta_mse = sqrt(mean(theta_error.^2))/length(X);
+    theta_error = theta_true_j(:) - theta_pred_j(:);
+    theta_mse = sqrt(mean(theta_error.^2))/length(X_pred);
     RMSE.theta = theta_mse;
 
-    wb_error = wb_ref_j(:) - wb_j(:);
-    wb_mse = sqrt(mean(wb_error.^2))/length(X);
+    wb_error = wb_true_j(:) - wb_pred_j(:);
+    wb_mse = sqrt(mean(wb_error.^2))/length(X_pred);
     RMSE.wb = wb_mse;
-    RMSE
 
     % sum rmse for each control
     x_err =  [x_err, RMSE.x];
@@ -74,7 +69,7 @@ for j=1:length(traj_len)-1
     if show_plot
         figure
         subplot(6,2,1)
-        plot(iter,x_ref(1,start_idx:end_idx),iter,x(1,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,x_true(1,start_idx:end_idx),iter,x_pred(1,start_idx:end_idx),'--','LineWidth',2);
         axes1 = gca;
         box(axes1,'on');
         set(axes1,'FontSize',15,'LineWidth',2);
@@ -82,7 +77,7 @@ for j=1:length(traj_len)-1
         ylabel("$x$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,3)
-        plot(iter,x_ref(2,start_idx:end_idx),iter,x(2,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,x_true(2,start_idx:end_idx),iter,x_pred(2,start_idx:end_idx),'--','LineWidth',2);
         axes3 = gca;
         box(axes3,'on');
         set(axes3,'FontSize',15,'LineWidth',2);
@@ -90,7 +85,7 @@ for j=1:length(traj_len)-1
         ylabel("$y$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,5)
-        plot(iter,x_ref(3,start_idx:end_idx),iter,x(3,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,x_true(3,start_idx:end_idx),iter,x_pred(3,start_idx:end_idx),'--','LineWidth',2);
         axes5 = gca;
         box(axes5,'on');
         set(axes5,'FontSize',15,'LineWidth',2);
@@ -98,7 +93,7 @@ for j=1:length(traj_len)-1
         ylabel("$z$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,7)
-        plot(iter,dx_ref(1,start_idx:end_idx),iter,dx(1,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,dx_true(1,start_idx:end_idx),iter,dx_pred(1,start_idx:end_idx),'--','LineWidth',2);
         axes7 = gca;
         box(axes7,'on');
         set(axes7,'FontSize',15,'LineWidth',2);
@@ -106,7 +101,7 @@ for j=1:length(traj_len)-1
         ylabel("$\dot{x}$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,9)
-        plot(iter,dx_ref(2,start_idx:end_idx),iter,dx(2,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,dx_true(2,start_idx:end_idx),iter,dx_pred(2,start_idx:end_idx),'--','LineWidth',2);
         axes9 = gca;
         box(axes9,'on');
         set(axes9,'FontSize',15,'LineWidth',2);
@@ -114,7 +109,7 @@ for j=1:length(traj_len)-1
         ylabel("$\dot{y}$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,11)
-        plot(iter,dx_ref(3,start_idx:end_idx),iter,dx(3,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,dx_true(3,start_idx:end_idx),iter,dx_pred(3,start_idx:end_idx),'--','LineWidth',2);
         axes11 = gca;
         box(axes11,'on');
         set(axes11,'FontSize',15,'LineWidth',2);
@@ -123,7 +118,7 @@ for j=1:length(traj_len)-1
         ylabel("$\dot{z}$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,2)
-        plot(iter,theta_ref(1,start_idx:end_idx),iter,theta(1,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,theta_true(1,start_idx:end_idx),iter,theta_pred(1,start_idx:end_idx),'--','LineWidth',2);
         axes2 = gca;
         box(axes2,'on');
         set(axes2,'FontSize',15,'LineWidth',2);
@@ -131,7 +126,7 @@ for j=1:length(traj_len)-1
         ylabel("$\theta_x$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,4)
-        plot(iter,theta_ref(2,start_idx:end_idx),iter,theta(2,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,theta_true(2,start_idx:end_idx),iter,theta_pred(2,start_idx:end_idx),'--','LineWidth',2);
         axes4 = gca;
         box(axes4,'on');
         set(axes4,'FontSize',15,'LineWidth',2);
@@ -139,7 +134,7 @@ for j=1:length(traj_len)-1
         ylabel("$\theta_y$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,6)
-        plot(iter,theta_ref(3,start_idx:end_idx),iter,theta(3,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,theta_true(3,start_idx:end_idx),iter,theta_pred(3,start_idx:end_idx),'--','LineWidth',2);
         axes6 = gca;
         box(axes6,'on');
         set(axes6,'FontSize',15,'LineWidth',2);
@@ -147,7 +142,7 @@ for j=1:length(traj_len)-1
         ylabel("$\theta_z$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,8)
-        plot(iter,wb_ref(1,start_idx:end_idx),iter,wb(1,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,wb_true(1,start_idx:end_idx),iter,wb_pred(1,start_idx:end_idx),'--','LineWidth',2);
         axes8 = gca;
         box(axes8,'on');
         set(axes8,'FontSize',15,'LineWidth',2);
@@ -155,7 +150,7 @@ for j=1:length(traj_len)-1
         ylabel("$\omega_x$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,10)
-        plot(iter,wb_ref(2,start_idx:end_idx),iter,wb(2,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,wb_true(2,start_idx:end_idx),iter,wb_pred(2,start_idx:end_idx),'--','LineWidth',2);
         axes10 = gca;
         box(axes10,'on');
         set(axes10,'FontSize',15,'LineWidth',2);
@@ -163,7 +158,7 @@ for j=1:length(traj_len)-1
         ylabel("$\omega_y$",'interpreter','latex', 'FontSize', 20)
 
         subplot(6,2,12)
-        plot(iter,wb_ref(3,start_idx:end_idx),iter,wb(3,start_idx:end_idx),'--','LineWidth',2);
+        plot(iter,wb_true(3,start_idx:end_idx),iter,wb_pred(3,start_idx:end_idx),'--','LineWidth',2);
         axes12 = gca;
         box(axes12,'on');
         set(axes12,'FontSize',15,'LineWidth',2);

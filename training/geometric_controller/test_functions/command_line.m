@@ -1,9 +1,8 @@
 function desired = command_line(t,param)
 
 height = param.height;
-R = param.R;
-desired.x = R*[0.5 * t, 0, -height]';
-desired.v = R'*[0.5 * 1, 0, 0]';
+desired.x = [0.5 * t, 0, -height]';
+desired.v = [0.5 * 1, 0, 0]';
 desired.x_2dot = [0, 0, 0]';
 desired.x_3dot = [0, 0, 0]';
 desired.x_4dot = [0, 0, 0]';

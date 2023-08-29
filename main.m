@@ -12,22 +12,19 @@ rng(seed);
 addpath dynamics edmd mpc utils training
 addpath(genpath('training'))
 
-%% get parameters
-mpc_params = get_params();
-% set params
-show_plot = false;
-mpc_params.use_casadi = false;
 
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'line';%'hover';%'line';
+traj_params.traj_type = 'line';%'circle';%'lissajous';
+show_plot = false;
+noise_flag = false;
+trun_traj = false; % if true, need to set the indices inside get_geometric_trajectories
 % parameter: 
 % hover:-> height
 % circle:-> radius
 % line:-> end point
-traj_params.params = linspace(0.5,5,10);  
+traj_params.params = linspace(0.5,2.5,10);  
 traj_params.n_traj = length(traj_params.params);
-flag='training';
-[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
+[T, X, U, X1, X2, U1, U2, traj_params] = get_geometric_trajectories(traj_params,show_plot,noise_flag,trun_traj);
 
 %% get EDMD matrices
 n_basis = 3; % n=3 works best
@@ -41,28 +38,34 @@ EDMD.n_basis = n_basis;
 
 %% evaluate EDMD prediction for n timesteps
 show_plot = true;
-flag='eval';
+noise_flag = false;
+trun_traj = false;
 traj_params.params = 1.5;  
 traj_params.n_traj = length(traj_params.params);
-[T, X, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
-X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,n_basis,show_plot);
+[T, X, U, X1, X2, U1, U2, traj_params] = get_geometric_trajectories(traj_params,show_plot,noise_flag,trun_traj);
+EDMD.eval_horizon = 2000; % 'eval_horizon' step prediction
+X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,show_plot);
 
 %% do MPC
 % MPC parameters
-mpc_params.predHorizon = 10;
-mpc_params.simTimeStep = 1e-3;
-dt_sim = mpc_params.simTimeStep;
+noise_flag = false;
+params = get_params(noise_flag);
+% set params
+params.use_casadi = false;
+params.predHorizon = 15;
+params.simTimeStep = 1e-3;
+dt_sim = params.simTimeStep;
 
 % simulation time
-mpc_params.SimTimeDuration = 2;  % [sec]
-mpc_params.MAX_ITER = floor(mpc_params.SimTimeDuration/ mpc_params.simTimeStep);
+params.SimTimeDuration = 3;  % [sec]
+params.MAX_ITER = floor(params.SimTimeDuration/ params.simTimeStep);
 
 % get reference trajectory
 show_plot = false;
+trun_traj = false;
 traj_params.params = 1.5;  
 traj_params.n_traj = length(traj_params.params);
-flag='mpc';
-[T, X_ref_mpc, U, X1, X2, U1, U2, traj_params] = get_pid_trajectories(traj_params,show_plot,flag);
+[T, X_ref_mpc, U, X1, X2, U1, U2, traj_params] = get_geometric_trajectories(traj_params,show_plot,noise_flag,trun_traj);
 
 % reduce number of refernce points in the trajectory
 % hold_for = 5;%mpc_params.predHorizon;
@@ -82,34 +85,29 @@ for i = 1:length(X_ref_mpc) % compare n+1 timesteps
     z = get_basis(x_des,n_basis);
     Z_ref = [Z_ref,z];
 end
-
 Z0 = get_basis(X0,n_basis);
-
-mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref_mpc,n_basis,mpc_params);
-
-%% plots
+mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref_mpc,params);
+mpc
+%% MPC plots
 % parse each state for plotting
+close all
 x_ref=[]; dx_ref = []; theta_ref =[]; wb_ref=[];
 x_mpc=[]; dx_mpc = []; theta_mpc =[]; wb_mpc=[];
 X_ref_plot = []; X_mpc = []; t_plot = [];
-skip_idx=10; 
+skip_idx=100; 
 for i = 1:skip_idx:length(mpc.t)
     x_ref = [x_ref, mpc.X_ref(i,1:3)'];
     dx_ref = [dx_ref, mpc.X_ref(i,4:6)'];
-    q_ref = mpc.X_ref(i,7:10)';
-    bRw_ref = QuatToRot(q_ref);
-    [roll_ref,pitch_ref,yaw_ref] = RotToRPY_ZXY(bRw_ref);
-    theta_ref = [theta_ref, [roll_ref,pitch_ref,yaw_ref]'];
-    wb_ref = [wb_ref, mpc.X_ref(i,11:13)']; 
+    bRw_ref = reshape(mpc.X_ref(i,10:18),[3,3]);
+    theta_ref = [theta_ref, vee_map(logm(bRw_ref))];
+    wb_ref = [wb_ref, mpc.X_ref(i,7:9)'];
 
     % for prediction
     x_mpc = [x_mpc, mpc.X(i,1:3)'];
     dx_mpc = [dx_mpc, mpc.X(i,4:6)'];
-    q_mpc = mpc.X(i,7:10)';
-    bRw_mpc = QuatToRot(q_mpc);
-    [roll_mpc,pitch_mpc,yaw_mpc] = RotToRPY_ZXY(bRw_mpc);
-    theta_mpc = [theta_mpc, [roll_mpc,pitch_mpc,yaw_mpc]'];
-    wb_mpc = [wb_mpc, mpc.X(i,11:13)']; 
+    bRw = reshape(mpc.X(i,10:18),[3,3]);
+    theta_mpc = [theta_mpc, vee_map(logm(bRw))];
+    wb_mpc = [wb_mpc, mpc.X(i,7:9)'];
 
     t_plot = [t_plot, mpc.t(i)];
 end

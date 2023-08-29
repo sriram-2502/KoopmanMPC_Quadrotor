@@ -1,4 +1,4 @@
-function [F, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,Z_ref,N,mpc,params)
+function [F, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,Z_ref,N,mpc)
 % Inputs
 % Z (current states - lifted)
 % EDMD (structure with EDMD matrices A B and C)
@@ -21,56 +21,35 @@ function [F, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,Z_ref,N,mpc,params)
 % augmented ineq constraint                 : A_ineq * X <= b_ineq
 
 %% get system matrices
-% define friction constraints
-error = norm(mpc.X_buffer - mpc.X_ref_buffer)/size(mpc.X_buffer,2);
-error_threshold = 10; % tuning parameter
-if false%size(mpc.X_buffer,2)==100 && error > error_threshold
-    EDMD = update_EDMD(EDMD,mpc.X_buffer,mpc.U_buffer);
-    A = EDMD.A_online;
-    B = EDMD.B_online;
-else
-    A = EDMD.A;
-    B = EDMD.B;
+A = EDMD.A;
+B = EDMD.B;
+
+% update rule for EDMD
+error_threshold = 1e-6; % tuning parameter
+if size(mpc.X_buffer,2)==100 % dont calculate error if X_buffer is empty
+    error = norm(mpc.X_buffer(1:3,:) - mpc.X_ref_buffer(1:3,:))/size(mpc.X_buffer,2);
+    EDMD.update_flag = false;
+    if error > error_threshold
+        EDMD.update_flag = true;
+        EDMD = update_EDMD(EDMD,mpc.X_buffer,mpc.U_buffer);
+        A = EDMD.A_online;
+        B = EDMD.B_online;
+    end
 end
 C = EDMD.C;
 n = size(A,2); % state dimension columns (n x n)
 
-%% get current and desired states
-% % get X from lifted states Z = [x dx R' w' Rw Rw^2 ...]
-% X = C*Z;
-% x = X(1:3); dx = X(4:6); 
-% q = X(7:10);
-% bRw = QuatToRot(q);
-% [roll,pitch,yaw] = RotToRPY_ZXY(bRw);
-% theta = [roll,pitch,yaw]';
-% wb = X(11:13); 
-% X_cur = [x;dx;theta;wb];
-% 
-% x_ref=[]; dx_ref=[];
-% theta_ref =[ ]; wb_ref = [];
-% for i =1:N
-%     X_ref = C*Z_ref(:,i); % get X_ref from parse_edmd (C*Z_ref) states
-%     x_ref = [x_ref,X_ref(1:3)];
-%     dx_ref = [dx_ref,X_ref(4:6)];
-%     q_ref = X_ref(7:10,i);
-%     bRw_ref = QuatToRot(q_ref);
-%     [roll_ref,pitch_ref,yaw_ref] = RotToRPY_ZXY(bRw_ref);
-%     theta_ref = [theta_ref, [roll_ref,pitch_ref,yaw_ref]'];
-%     wb_ref = [wb_ref, X_ref(11:13,i)]; 
-% end
-% X_ref = [x_ref;dx_ref;theta_ref;wb_ref]; %going back to PID states for simulation
-
 %% define costs 
-Qx = diag([1e6;1e6;1e6]);
-Qv = diag([1e5;1e5;1e6]);
-Qa = 1e5*eye(3);
+Qx = diag([1e4;1e6;1e4]);
+Qv = diag([1e4;1e6;1e4]);
 Qw = 1e5*eye(3);
+Qr = 1e5*eye(9);
 Q_i = 0*eye(size(Z,1));
-Q_i(1:12,1:12) = blkdiag(Qx, Qv, Qa, Qw);
+Q_i(1:18,1:18) = blkdiag(Qx, Qv, Qw, Qr);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e1;1e3;1e3;1e3]);
+R_i = diag([1e-6;1e3;1e3;1e3]);
 % R_i = diag([1e2;1e2;1e2;1e2]);
 
 %% Build QP Matrices
