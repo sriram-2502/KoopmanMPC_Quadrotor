@@ -14,7 +14,7 @@ addpath(genpath('training'))
 
 
 %% generate trajectory data using nominal controller
-traj_params.traj_type = 'line';%'circle';%'lissajous';
+traj_params.traj_type = 'line';% current options are 'line' & 'lissajous';
 show_plot = false;
 noise_flag = false;
 trun_traj = false; % if true, need to set the indices inside get_geometric_trajectories
@@ -43,16 +43,18 @@ trun_traj = false;
 traj_params.params = 1.5;  
 traj_params.n_traj = length(traj_params.params);
 [T, X, U, X1, X2, U1, U2, traj_params] = get_geometric_trajectories(traj_params,show_plot,noise_flag,trun_traj);
-EDMD.eval_horizon = 2000; % 'eval_horizon' step prediction
+EDMD.eval_horizon = 1000; % 'eval_horizon' step prediction
 X_eval = eval_EDMD_pid(X,U,traj_params,EDMD,show_plot);
 
 %% do MPC
 % MPC parameters
 noise_flag = false;
+mass_change_flag = false;
+update_edmd_flag = false;
 params = get_params(noise_flag);
 % set params
 params.use_casadi = false;
-params.predHorizon = 15;
+params.predHorizon = 20;
 params.simTimeStep = 1e-3;
 dt_sim = params.simTimeStep;
 
@@ -86,7 +88,9 @@ for i = 1:length(X_ref_mpc) % compare n+1 timesteps
     Z_ref = [Z_ref,z];
 end
 Z0 = get_basis(X0,n_basis);
-mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref_mpc,params);
+EDMD.update_flag = false;
+U_ref_mpc = U1;
+mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref_mpc,params,U_ref_mpc,mass_change_flag,update_edmd_flag);
 mpc
 %% MPC plots
 % parse each state for plotting

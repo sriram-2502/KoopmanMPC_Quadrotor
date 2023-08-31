@@ -1,4 +1,4 @@
-function [F, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,Z_ref,N,mpc)
+function [F, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,Z_ref,N,mpc,update_edmd_flag)
 % Inputs
 % Z (current states - lifted)
 % EDMD (structure with EDMD matrices A B and C)
@@ -25,23 +25,21 @@ A = EDMD.A;
 B = EDMD.B;
 
 % update rule for EDMD
-error_threshold = 1e-6; % tuning parameter
-if size(mpc.X_buffer,2)==100 % dont calculate error if X_buffer is empty
-    error = norm(mpc.X_buffer(1:3,:) - mpc.X_ref_buffer(1:3,:))/size(mpc.X_buffer,2);
-    EDMD.update_flag = false;
+error_threshold = 1e4; % tuning parameter
+if update_edmd_flag && size(mpc.X_buffer,2)==mpc.buffer_size % dont calculate error if X_buffer is empty
+    error = norm(mpc.X_buffer(1:3,:) - mpc.X_ref_buffer(1:3,:));%/size(mpc.X_buffer,2);
     if error > error_threshold
-        EDMD.update_flag = true;
-        EDMD = update_EDMD(EDMD,mpc.X_buffer,mpc.U_buffer);
-        A = EDMD.A_online;
-        B = EDMD.B_online;
+        EDMD = update_EDMD_M2(EDMD,mpc.X_buffer,mpc.U_buffer);
+        A = EDMD.A;
+        B = EDMD.B;
     end
 end
 C = EDMD.C;
 n = size(A,2); % state dimension columns (n x n)
 
 %% define costs 
-Qx = diag([1e4;1e6;1e4]);
-Qv = diag([1e4;1e6;1e4]);
+Qx = diag([1e5;1e5;1e5]);
+Qv = diag([1e5;1e5;1e5]);
 Qw = 1e5*eye(3);
 Qr = 1e5*eye(9);
 Q_i = 0*eye(size(Z,1));
@@ -49,7 +47,7 @@ Q_i(1:18,1:18) = blkdiag(Qx, Qv, Qw, Qr);
 
 P = Q_i; % terminal cost
 
-R_i = diag([1e-6;1e3;1e3;1e3]);
+R_i = diag([1e-1;1e2;1e2;1e2]);
 % R_i = diag([1e2;1e2;1e2;1e2]);
 
 %% Build QP Matrices

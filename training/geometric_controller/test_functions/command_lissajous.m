@@ -1,6 +1,7 @@
-function desired = command_lissajous(t)
+function desired = command_lissajous(t,param)
 
-A = 1;
+% A = 1;
+A = param.height;
 B = 1;
 C = 0.2;
 

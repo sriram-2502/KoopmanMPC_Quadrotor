@@ -26,7 +26,7 @@ addpath('test_functions');
 
 %% Simulation parameters
 % t = 0:0.01:10; % original setup
-t = 0:1e-3:5;
+t = 0:1e-3:10;
 N = length(t);
 
 param = get_params(noise_flag);
