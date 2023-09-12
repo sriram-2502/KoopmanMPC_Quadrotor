@@ -1,4 +1,4 @@
-function [t, X_geometric]=simulate_geometric(trajhandle,controlhandle,noise_flag,show_plot, height)
+function [t, X_geometric]=simulate_geometric(trajhandle,controlhandle,show_plot, k, param)
 % 
 % Copyright (c) 2020 Flight Dynamics and Control Lab
 % 
@@ -29,9 +29,6 @@ addpath('test_functions');
 t = 0:1e-3:10;
 N = length(t);
 
-param = get_params(noise_flag);
-[k, param] = get_control_gains(param);
-param.height=height;
 
 %% Initial conditions
 x0 = [0, 0, 0]';
