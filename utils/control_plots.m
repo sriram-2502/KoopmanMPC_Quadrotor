@@ -31,3 +31,13 @@ ylabel('$M_3$','FontSize',20, 'Interpreter','latex')
 axes = gca; set(axes,'FontSize',15);
 box on; axes.LineWidth=2;
 xlim([0,SimTimeDuration]);
+
+if size(U,2)==5
+    subplot(4,4,11)
+    plot(tout,U(:,5)); hold on;
+    xlabel('$t$ (s)','FontSize',20, 'Interpreter','latex')
+    ylabel('$Mass$','FontSize',20, 'Interpreter','latex')
+    axes = gca; set(axes,'FontSize',15);
+    box on; axes.LineWidth=2;
+    xlim([0,SimTimeDuration]);
+end
