@@ -1,4 +1,4 @@
-function mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,params,U_ref_mpc,mass_change_flag,update_edmd_flag)
+function mpc = sim_MPC(EDMD,Z0,Z_ref,X_ref,params,U_ref_mpc,mass_change_flag,online_update_flag)
 % --- logging ---
 dt_sim = params.simTimeStep;
 N = params.predHorizon;
@@ -13,11 +13,15 @@ h_waitbar = waitbar(0,'Calculating...');
 tic
 Z = Z0;
 mpc = [];
-if update_edmd_flag
-    mpc.buffer_size = 500;
-    mpc.X_buffer = [];
+if online_update_flag
+    mpc.buffer_size = 25;
+    mpc.X_buffer = []; 
+%     mpc.X_minus_buffer = [];                                              % was used in old mass_estimator
     mpc.U_buffer = [];
     mpc.X_ref_buffer = [];
+    mpc.estimated_mass = []; mpc.estimated_mass_edmd = [];
+%     mpc.dt_sim = [];                                                      % was used in old mass_estimator
+    mpc.t = [];
 end
 
 for ii = 1:params.MAX_ITER
@@ -32,13 +36,20 @@ for ii = 1:params.MAX_ITER
         [zval] = casadi_MPC(EDMD,Z,Z_ref,N,params);
     else
         tic
-        [f, G, A, b, EDMD] = get_QP(EDMD,Z,z_ref,N,mpc,update_edmd_flag);
-        if any([any(isinf(f)), any(isnan(f)), any(isinf(G)), any(isnan(G)), any(isinf(A)), any(isnan(A)), any(isinf(b)), any(isnan(b))])
+        [f, G, A_ineq, b_ineq, EDMD] = get_QP(EDMD,Z,z_ref,N,mpc);
+        if any([any(isinf(f)), any(isnan(f)), any(isinf(G)), any(isnan(G)),...
+                any(isinf(A_ineq)), any(isnan(A_ineq)), any(isinf(b_ineq)),...
+                any(isnan(b_ineq))])
             fprintf('MATRICES ARE NOT REAL VALUED')
-        elseif isreal(f) && isreal(G) && isreal(A) && isreal(b)
+        elseif isreal(f) && isreal(G) && isreal(A_ineq) && isreal(b_ineq)
             % solve QP using quadprog
+            if EDMD.mass_as_input
+            options = optimoptions('quadprog','MaxIterations',1e4);
+            [zval,f_val] = quadprog(G,f,A_ineq,b_ineq,[],[],[],[],[],options);
+            else
             options = optimoptions('quadprog','MaxIterations',1e4);
             [zval,f_val] = quadprog(G,f,[],[],[],[],[],[],[],options);
+            end
             toc
         end
     end
@@ -58,7 +69,11 @@ for ii = 1:params.MAX_ITER
         fprintf('EDMD evaluated in MPC after online update')
     end
     % apply control from the quadprog
-    Ut = zval(1:4);
+    if EDMD.mass_as_input
+        Ut = zval(1:5);
+    else
+        Ut = zval(1:4);
+    end
 
     %% --- simulate without any external disturbances ---
     % parse true states from lifted states
@@ -73,16 +88,33 @@ for ii = 1:params.MAX_ITER
     %% --- update ---
     Xt = X_geometric(end,:)'; % Xt for EDMD (in body frame)
 
-    if update_edmd_flag
+    if online_update_flag
         % add to buffer for online update
         if(size(mpc.X_buffer,2)>=mpc.buffer_size)
             mpc.X_buffer = [mpc.X_buffer(:,2:end), Xt];
+%             mpc.X_minus_buffer = [mpc.X_minus_buffer(:,2:end), ...
+%                 X_geometric(end-1,:)'];                                   % was used in old mass_estimator
             mpc.X_ref_buffer = [mpc.X_ref_buffer(:,2:end), X_ref(:,ii)];
             mpc.U_buffer = [mpc.U_buffer(:,2:end), Ut];
+%             mpc.dt_sim = [mpc.dt_sim(:,2:end), t(end)-t(end-1)];          % was used in old mass_estimator
+            mpc.t = [mpc.t(:,2:end), tend];
+            
+%             [estimated_mass, estimated_mass_edmd] = mass_estimator(...
+%                 mpc.dt_sim, mpc.X_minus_buffer, mpc.X_buffer,
+%                 mpc.U_buffer, EDMD);                                      % was used in old mass_estimator
+            estimated_mass = mass_estimator(mpc.X_buffer, mpc.U_buffer,...
+                mpc.t,mass_change_flag);
+            mpc.estimated_mass = [mpc.estimated_mass, estimated_mass];
+%             mpc.estimated_mass_edmd = [mpc.estimated_mass_edmd, ...
+%                 estimated_mass_edmd];                                     % was used in old mass_estimator
         else
             mpc.X_buffer = [mpc.X_buffer, Xt];
+%             mpc.X_minus_buffer = [mpc.X_minus_buffer,
+%             X_geometric(end-1,:)'];                                       % was used in old mass_estimator
             mpc.X_ref_buffer = [mpc.X_ref_buffer, X_ref(:,ii)];
             mpc.U_buffer = [mpc.U_buffer, Ut];
+%             mpc.dt_sim = [mpc.dt_sim, t(end)-t(end-1)];                   % was used in old mass_estimator
+            mpc.t = [mpc.t, tend];
         end
     end
 

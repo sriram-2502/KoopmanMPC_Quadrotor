@@ -20,12 +20,18 @@ function EDMD = get_EDMD(X1, X2, U1, n_basis)
 Z1 = []; Z2 = [];
 % collect basis for n control inputs 
 % Zn = [Zt_1; Zt_2; ... Zt_n]
-for i = 1:length(X1)
+for i = 1:size(X1,2)
     x1 = X1(:,i); x2 = X2(:,i);
     z1 = get_basis(x1,n_basis);
     z2 = get_basis(x2,n_basis);
     Z1 = [Z1, z1]; Z2 = [Z2, z2];
 end
+
+%% shuffle Z1,Z2 and U1 data
+r = randperm(size(X1,2));
+Z1 = Z1(:,r);
+Z2 = Z2(:,r);
+U1 = U1(:,r);
 
 %% get A B matrices
 % Z2 = AZ1 + BU = [A B]*Z1_aug => Z2 = K*Z1_aug

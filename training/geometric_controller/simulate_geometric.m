@@ -31,7 +31,9 @@ N = length(t);
 
 
 %% Initial conditions
-x0 = [0, 0, 0]';
+% x0 = [2, 2, 2]';
+% x0 = normrnd([2; 2; 2],1);
+x0 = normrnd(param.initial_position,param.position_stdev);
 v0 = [0, 0, 0]';
 R0 = expm(pi * hat([0, 0, 1]'));
 W0 = [0, 0, 0]';
@@ -82,34 +84,34 @@ if show_plot
     linewidth = 1;
     xlabel_ = 'time (s)';
 
-    figure;
-    plot_3x1(t, e.R, '', xlabel_, 'e_R', linetype, linewidth)
-    set(gca, 'FontName', 'Times New Roman');
-
-    figure;
-    plot_3x1(t, e.x, '', xlabel_, 'e_x', linetype, linewidth)
-    set(gca, 'FontName', 'Times New Roman');
-
-    figure;
-    plot_3x1(t, e.v, '', xlabel_, 'e_v', linetype, linewidth)
-    set(gca, 'FontName', 'Times New Roman');
-
-    figure;
-    plot_3x1(t, eI .* [k.I, k.I, k.yI]', '', xlabel_, 'e', linetype, linewidth)
-    plot_3x1(t, param.R_delta .* ones(3, N), ...
-        '', xlabel_, 'e_I', 'r', linewidth)
-    set(gca, 'FontName', 'Times New Roman');
-
-    figure;
-    plot_3x1(t, ei * k.i, '', xlabel_, 'e_i', linetype, linewidth)
-    plot_3x1(t, param.x_delta .* ones(3, N), ...
-        '', xlabel_, 'e_i', 'r', linewidth)
-    set(gca, 'FontName', 'Times New Roman');
-
-    figure;
-    plot_3x1(t, x, '', xlabel_, 'x', linetype, linewidth)
-    plot_3x1(t, d.x, '', xlabel_, 'x', 'r', linewidth)
-    set(gca, 'FontName', 'Times New Roman');
+%     figure;
+%     plot_3x1(t, e.R, '', xlabel_, 'e_R', linetype, linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
+% 
+%     figure;
+%     plot_3x1(t, e.x, '', xlabel_, 'e_x', linetype, linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
+% 
+%     figure;
+%     plot_3x1(t, e.v, '', xlabel_, 'e_v', linetype, linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
+% 
+%     figure;
+%     plot_3x1(t, eI .* [k.I, k.I, k.yI]', '', xlabel_, 'e', linetype, linewidth)
+%     plot_3x1(t, param.R_delta .* ones(3, N), ...
+%         '', xlabel_, 'e_I', 'r', linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
+% 
+%     figure;
+%     plot_3x1(t, ei * k.i, '', xlabel_, 'e_i', linetype, linewidth)
+%     plot_3x1(t, param.x_delta .* ones(3, N), ...
+%         '', xlabel_, 'e_i', 'r', linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
+% 
+%     figure;
+%     plot_3x1(t, x, '', xlabel_, 'x', linetype, linewidth)
+%     plot_3x1(t, d.x, '', xlabel_, 'x', 'r', linewidth)
+%     set(gca, 'FontName', 'Times New Roman');
 
     figure;
     plot3(x(1,:), x(2,:), x(3,:), 'k');
@@ -123,4 +125,7 @@ if show_plot
     set(gca, 'Box', 'on');
     grid on;
     set(gca, 'FontName', 'Times New Roman');
+%     view(90,0) % YZ-plane view
+%     view(0,0) % XZ-plane view
+%     view(0,90) % XY-plane view
 end
