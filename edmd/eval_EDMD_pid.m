@@ -9,14 +9,10 @@ Z2 = EDMD.Z2;
 %% check prediction on new control input
 X_true=[]; X_pred=[];
 traj_len = traj_params.traj_len;
-t_len = traj_len - 1; % since trajectory for EDMD is smaller by 1 time unit
-t_len = [0; t_len]; % add 0 to get consistant trajectory lengths
 eval_traj_len = EDMD.eval_horizon*ones(size(traj_len));% part of the trajectory used for evaluation
-
+start_idx = 1;
 %loop for each traj
-for j=1:length(t_len)-1
-    start_idx = sum(t_len(1:j))+1;
-    
+for j=1:length(traj_len)    
     % get z0
     X0 = X(:,start_idx);
     z0 = get_basis(X0,EDMD.n_basis);
@@ -49,6 +45,7 @@ for j=1:length(t_len)-1
     X_true = [X_true, X_true_j];
     X_pred = [X_pred, X_pred_j];
     
+    start_idx = start_idx + traj_len(j);
 end
 eval_traj_len = eval_traj_len+1;
 RMSE = rmse(X_pred,X_true,eval_traj_len,show_plot) % 
