@@ -44,7 +44,7 @@ traj_params.n_traj = length(traj_params.params);
     traj_params,show_plot,noise_flag,trunc_traj,train_wt_random_mass);
 
 %% get EDMD matrices
-n_basis = 3; % n=3 works best
+n_basis = 1; % n=3 works best
 if train_wt_random_mass
     if mass_inv_as_param
         EDMD = get_EDMD(X1, X2, [U1;1./UM1], n_basis);
@@ -75,11 +75,11 @@ show_plot = true;
 noise_flag = true;
 trunc_traj = false;
 test_wt_random_mass = false;
-traj_params.params = traj_params.initial_position(1)+1.5;  
+traj_params.params = traj_params.initial_position(1)+linspace(1.25,1.75,5);  
 traj_params.n_traj = length(traj_params.params);
 [~, X, ~, ~, ~, U1, UM1, traj_params] = get_geometric_trajectories(...
     traj_params,show_plot,noise_flag,trunc_traj,test_wt_random_mass);
-EDMD.eval_horizon = 200; % 'eval_horizon' step prediction
+EDMD.eval_horizon = 1000; % 'eval_horizon' step prediction
 if train_wt_random_mass
     if mass_inv_as_param
         X_eval_std = eval_EDMD_pid(X,[U1;1./UM1],traj_params,EDMD,show_plot);
@@ -115,7 +115,7 @@ dt_sim = params.simTimeStep;
 if strcmp(traj_params.traj_type,'line')
     params.SimTimeDuration = 5;  % [sec]
 elseif strcmp(traj_params.traj_type,'lissajous')
-    params.SimTimeDuration = 6;  % [sec]
+    params.SimTimeDuration = 3;  % [sec]
 elseif strcmp(traj_params.traj_type,'constVx')
     params.SimTimeDuration = 5;
 end
