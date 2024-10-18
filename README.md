@@ -21,6 +21,7 @@ We developed a linear MPC in the lifted states to obtain optimal control at each
 To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
 
 # Citation
+```
 @article{narayanan2023se,
   title={SE (3) Koopman-MPC: Data-driven Learning and Control of Quadrotor UAVs},
   author={Narayanan, Sriram SKS and Tellez-Castro, Duvan and Sutavani, Sarang and Vaidya, Umesh},
@@ -31,3 +32,4 @@ To run the MPC, start with the ```main.m``` file from the MECC branch (https://g
   year={2023},
   publisher={Elsevier}
 }
+```
