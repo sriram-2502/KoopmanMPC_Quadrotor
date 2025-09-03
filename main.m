@@ -9,7 +9,7 @@ seed = 1;
 rng(seed);
 
 % import functions
-addpath dynamics edmd mpc utils training
+addpath dynamics edmd mpc utils training estimation
 addpath(genpath('training'))
 
 
@@ -40,11 +40,12 @@ traj_params.initial_position = initial_position;
 traj_params.position_stdev = 0.1*[1,1,1]';
 traj_params.params = initial_position(1)+linspace(0.5,5,10);
 traj_params.n_traj = length(traj_params.params);
+traj_params.simTimeStep = 1e-2;
 [~, ~, ~, X1, X2, U1, UM1, traj_params] = get_geometric_trajectories(...
     traj_params,show_plot,noise_flag,trunc_traj,train_wt_random_mass);
 
 %% get EDMD matrices
-n_basis = 1; % n=3 works best
+n_basis = 3; %works best
 if train_wt_random_mass
     if mass_inv_as_param
         EDMD = get_EDMD(X1, X2, [U1;1./UM1], n_basis);
@@ -61,35 +62,35 @@ Z1 = EDMD.Z1;
 Z2 = EDMD.Z2;
 EDMD.n_basis = n_basis;
 
-close(figure(11111))
-figure(11111)
-viscircles([0,0],1)
-hold on
-scatter(real(eig(A)),imag(eig(A)))
-axis tight
-axis square
-hold off
+% close(figure(11111))
+% figure(11111)
+% viscircles([0,0],1)
+% hold on
+% scatter(real(eig(A)),imag(eig(A)))
+% axis tight
+% axis square
+% hold off
 
 %% evaluate EDMD prediction for n timesteps
-show_plot = true;
-noise_flag = true;
-trunc_traj = false;
-test_wt_random_mass = false;
-traj_params.params = traj_params.initial_position(1)+linspace(1.25,1.75,5);  
-traj_params.n_traj = length(traj_params.params);
-[~, X, ~, ~, ~, U1, UM1, traj_params] = get_geometric_trajectories(...
-    traj_params,show_plot,noise_flag,trunc_traj,test_wt_random_mass);
-EDMD.eval_horizon = 1000; % 'eval_horizon' step prediction
-if train_wt_random_mass
-    if mass_inv_as_param
-        X_eval_std = eval_EDMD_pid(X,[U1;1./UM1],traj_params,EDMD,show_plot);
-    else
-        X_eval_std = eval_EDMD_pid(X,[U1;UM1],traj_params,EDMD,show_plot);
-    end
-else
-    X_eval_std = eval_EDMD_pid(X,U1,traj_params,EDMD,show_plot);
-end
-% X_eval_mor = eval_EDMD_reducedOrder(X,U,traj_params,EDMD,show_plot);
+% show_plot = true;
+% noise_flag = true;
+% trunc_traj = false;
+% test_wt_random_mass = false;
+% traj_params.params = traj_params.initial_position(1)+linspace(1.25,1.75,5);  
+% traj_params.n_traj = length(traj_params.params);
+% [~, X, ~, ~, ~, U1, UM1, traj_params] = get_geometric_trajectories(...
+%     traj_params,show_plot,noise_flag,trunc_traj,test_wt_random_mass);
+% EDMD.eval_horizon = 1000; % 'eval_horizon' step prediction
+% if train_wt_random_mass
+%     if mass_inv_as_param
+%         X_eval_std = eval_EDMD_pid(X,[U1;1./UM1],traj_params,EDMD,show_plot);
+%     else
+%         X_eval_std = eval_EDMD_pid(X,[U1;UM1],traj_params,EDMD,show_plot);
+%     end
+% else
+%     X_eval_std = eval_EDMD_pid(X,U1,traj_params,EDMD,show_plot);
+% end
+% % X_eval_mor = eval_EDMD_reducedOrder(X,U,traj_params,EDMD,show_plot);
 
 %% do MPC
 % 'get_geometric_trajectories' parameters
@@ -108,25 +109,25 @@ end
 % set params
 params.use_casadi = false;
 params.predHorizon = 20;
-params.simTimeStep = 1e-3;
-dt_sim = params.simTimeStep;
+params.simTimeStep = traj_params.simTimeStep;
 
 % simulation time
 if strcmp(traj_params.traj_type,'line')
-    params.SimTimeDuration = 5;  % [sec]
+    params.SimTimeDuration = 2;  % [sec]
 elseif strcmp(traj_params.traj_type,'lissajous')
-    params.SimTimeDuration = 3;  % [sec]
+    params.SimTimeDuration = 2;  % [sec]
 elseif strcmp(traj_params.traj_type,'constVx')
-    params.SimTimeDuration = 5;
+    params.SimTimeDuration = 2;
 end
 params.MAX_ITER = floor(params.SimTimeDuration/ params.simTimeStep);
 
 % get reference trajectory
-show_plot = false;
-trunc_traj = false;
+show_plot = false; trunc_traj = false; 
 traj_params.initial_position = initial_position;%+4*(rand(3,1)-0.5);
 traj_params.params = traj_params.initial_position(1)+1.5;  
+traj_params.position_stdev = 0.0*[1,1,1]';
 traj_params.n_traj = length(traj_params.params);
+noise_flag = true;
 [~, X_ref_mpc, ~, ~, ~, U1, UM1, ~] = get_geometric_trajectories(...
     traj_params,show_plot,noise_flag,trunc_traj,mpc_ref_wt_random_mass);
 
@@ -209,37 +210,55 @@ axes = gca; set(axes,'FontSize',15);
 set(gca, 'YDir', 'reverse', 'ZDir', 'reverse');
 axes.LineWidth=2;
 
-%% mass plots
-for i=1:size(mpc.estimated_mass,1)
-    figure(110+i)
-    plot(mpc.estimated_mass(i,:))
-end
+[Xsph,Ysph,Zsph] = sphere;
+hold on
+r = 0.1;
+Xsph2 = Xsph * r;
+Ysph2 = Ysph * r;
+Zsph2 = Zsph * r;
+surf(Xsph2+1,Ysph2+0.75,Zsph2-0.85)
+axis equal; axis tight
+surf(Xsph2+1.5,Ysph2-0.6,Zsph2-1.1)
 
-% for i=1:size(mpc.estimated_mass_edmd,1)
-%     figure(220+i)
-%     plot(mpc.estimated_mass_edmd(i,:))
+%% save EDMD model
+EDMD = rmfield(EDMD,{'Z1','Z2'});
+EDMD.cbf_basis = {'x1^2', 'x2^2', 'x3^2'};
+EDMD.cbf_basis_idxs = [19:21];
+EDMD.dt = params.simTimeStep;
+disp('EDMD: saving Koopman model')
+save('quadrotorCBF_EDMD.mat', '-struct', 'EDMD');
+
+%% mass plots
+% for i=1:size(mpc.estimated_mass,1)
+%     figure(110+i)
+%     plot(mpc.estimated_mass(i,:))
 % end
 % 
-% figure(300)
-% plot(mean(mpc.estimated_mass_edmd([1,2,3,4,5,6,7,10,11,12,13,14,15,16,17],:)))
-% 
-% figure(301)
-% plot(mean(mpc.estimated_mass_edmd([1,2,3,4,5,6],:)))
-% 
-% figure(302)
-% plot(mean(mpc.estimated_mass_edmd([5,6],:)))
-% 
-% m_avg = mean(mpc.estimated_mass_edmd([1,2,3,4,5,6],:));
-m_avg = mean(mpc.estimated_mass,1);
-% windowSize = 500; 
-% b = (1/windowSize)*ones(1,windowSize);
-% a = 1;
-% m_filtered = filter(b,a,m_avg);
-% figure(303)
-% plot(m_filtered)
-% hold on
-
+% % for i=1:size(mpc.estimated_mass_edmd,1)
+% %     figure(220+i)
+% %     plot(mpc.estimated_mass_edmd(i,:))
+% % end
+% % 
+% % figure(300)
+% % plot(mean(mpc.estimated_mass_edmd([1,2,3,4,5,6,7,10,11,12,13,14,15,16,17],:)))
+% % 
+% % figure(301)
+% % plot(mean(mpc.estimated_mass_edmd([1,2,3,4,5,6],:)))
+% % 
+% % figure(302)
+% % plot(mean(mpc.estimated_mass_edmd([5,6],:)))
+% % 
+% % m_avg = mean(mpc.estimated_mass_edmd([1,2,3,4,5,6],:));
 % m_avg = mean(mpc.estimated_mass,1);
-figure(304)
-plot(m_avg)
-% mean(m_avg)
+% % windowSize = 500; 
+% % b = (1/windowSize)*ones(1,windowSize);
+% % a = 1;
+% % m_filtered = filter(b,a,m_avg);
+% % figure(303)
+% % plot(m_filtered)
+% % hold on
+% 
+% % m_avg = mean(mpc.estimated_mass,1);
+% figure(304)
+% plot(m_avg)
+% % mean(m_avg)

@@ -26,7 +26,8 @@ addpath('test_functions');
 
 %% Simulation parameters
 % t = 0:0.01:10; % original setup
-t = 0:1e-3:10;
+% t = 0:1e-3:10;
+t = 0:param.simTimeStep:10;
 N = length(t);
 
 

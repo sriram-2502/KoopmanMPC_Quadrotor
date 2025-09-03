@@ -22,4 +22,9 @@ end
 % Geometric basis
 % X(1:18) => [x; dx; w; R(:)]
 % removing last six states, ei, eI, so that they dont affect the dynamics
-basis = [X(1:18); basis];
+% add basis for CBF constrains
+% % cbf_basis => [x1^2; x1*x2; x1*x3; x2^2; x2*x3; x3^2]
+% cbf_basis = unique(kron(X(1:3),X(1:3)),'stable');
+% cbf_basis => [x1^2; x2^2; x3^2]
+cbf_basis = X(1:3).^2;
+basis = [X(1:18); cbf_basis; basis];

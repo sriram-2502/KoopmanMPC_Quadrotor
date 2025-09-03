@@ -35,6 +35,7 @@ param = get_params(noise_flag);
 original_mass = param.m;
 param.initial_position = traj_params.initial_position;
 param.position_stdev = traj_params.position_stdev;
+param.simTimeStep = traj_params.simTimeStep;
 
 for i=1:traj_params.n_traj
     % set the 'height' parameter

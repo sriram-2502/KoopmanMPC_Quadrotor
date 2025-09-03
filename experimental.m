@@ -13,7 +13,8 @@ addpath dynamics edmd mpc utils training
 addpath(genpath('training'))
 
 %% get parameters
-mpc_params = get_params();
+noise_flag = false;
+mpc_params = get_params(noise_flag);
 % set params
 show_plot = true;
 mpc_params.use_casadi = false;
