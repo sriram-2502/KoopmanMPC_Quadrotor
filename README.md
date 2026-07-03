@@ -15,7 +15,7 @@ Here is an arXiv version: https://arxiv.org/abs/2305.03868
 To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
 
 ## 
-<p align="center">
+<p align="left">
   <img src="Figures/star-history-202673.png" alt="Star history chart for SE(3) Koopman-MPC" width="500"/>
 </p>
 
