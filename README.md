@@ -4,6 +4,9 @@ In this paper, we propose a novel data-driven approach for learning and control 
 Check out our paper on Science Direct: https://www.sciencedirect.com/science/article/pii/S2405896323024242  
 Here is an arXiv version: https://arxiv.org/abs/2305.03868
 
+## Running the code
+To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
+
 ## Star History
 
 <picture>
@@ -35,8 +38,7 @@ We developed a linear MPC in the lifted states to obtain optimal control at each
 ![Screenshot](Figures/MPC_traj_2.png)
 
 
-## Running the code
-To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
+
 
 # Citation
 ```
