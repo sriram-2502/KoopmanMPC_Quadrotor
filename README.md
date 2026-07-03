@@ -21,7 +21,7 @@ To run the MPC, start with the ```main.m``` file from the MECC branch (https://g
 
 ## EDMD training and validation
 
-We learning linear predictors ```A``` and ```B``` for a nonlinear quadrotor system using physics-informed observable functions and EDMD.
+We learn linear predictors ```A``` and ```B``` for a nonlinear quadrotor system using physics-informed observable functions and EDMD.
 
 
 ![EDMD](Figures/EDMD_evalutation_1.png)
