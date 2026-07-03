@@ -15,22 +15,9 @@ Here is an arXiv version: https://arxiv.org/abs/2305.03868
 To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
 
 ## 
-
-
-<picture>
-  <source
-    media="(prefers-color-scheme: dark)"
-    srcset="https://api.star-history.com/svg?repos=sriram-2502/KoopmanMPC_Quadrotor&type=Date&theme=dark"
-  />
-  <source
-    media="(prefers-color-scheme: light)"
-    srcset="https://api.star-history.com/svg?repos=sriram-2502/KoopmanMPC_Quadrotor&type=Date"
-  />
-  <img
-    alt="Star History Chart"
-    src="https://api.star-history.com/svg?repos=sriram-2502/KoopmanMPC_Quadrotor&type=Date"
-  />
-</picture>
+<p align="center">
+  <img src="Figures/star-history-202673.png" alt="Star history chart for SE(3) Koopman-MPC" width="800"/>
+</p>
 
 ## EDMD training and validation
 
