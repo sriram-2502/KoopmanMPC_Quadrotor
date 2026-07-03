@@ -16,7 +16,7 @@ To run the MPC, start with the ```main.m``` file from the MECC branch (https://g
 
 ## 
 <p align="center">
-  <img src="Figures/star-history-202673.png" alt="Star history chart for SE(3) Koopman-MPC" width="800"/>
+  <img src="Figures/star-history-202673.png" alt="Star history chart for SE(3) Koopman-MPC" width="500"/>
 </p>
 
 ## EDMD training and validation
