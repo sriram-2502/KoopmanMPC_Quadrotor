@@ -4,7 +4,7 @@ In this paper, we propose a novel data-driven approach for learning and control 
 Check out our paper on Science Direct: https://www.sciencedirect.com/science/article/pii/S2405896323024242
 Here is an Arvix version: https://arxiv.org/abs/2305.03868
 
-[![Star History Chart](https://api.star-history.com/svg?repos=sriram-2502/KoopmanMPC_Quadrotor&type=Date)](https://star-history.com/#sriram-2502/KoopmanMPC_Quadrotor&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=sriram-2502/KoopmanMPC_Quadrotor&type=Date)](https://www.star-history.com/?type=date&repos=sriram-2502%2FKoopmanMPC_Quadrotor)
 
 ## EDMD training and validation
 We learning linear predictors ```A``` and ```B``` for a nonlinear quadrotor system using physics-informed observable functions and EDMD.
