@@ -7,7 +7,8 @@ Here is an arXiv version: https://arxiv.org/abs/2305.03868
 ## Running the code
 To run the MPC, start with the ```main.m``` file from the MECC branch (https://github.com/sriram-2502/KoopmanMPC_Quadrotor/tree/mecc)
 
-## Star History
+## 
+[![Google Scholar](https://img.shields.io/badge/Google%20Scholar-Sriram%20Krishnamoorthy-blue?logo=googlescholar)](https://scholar.google.com/citations?user=-kMTFjwAAAAJ&hl=en)
 
 <picture>
   <source
