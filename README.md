@@ -8,7 +8,7 @@ Here is an Arvix version: https://arxiv.org/abs/2305.03868
 
 <a href="https://www.star-history.com/?repos=sriram-2502%2FKoopmanMPC_Quadrotor&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=sriram-2502/KoopmanMPC_Quadrotor&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=sriram-2502/KoopmanMPC_Quadrotor&type=date&theme=dark&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=sriram-2502/KoopmanMPC_Quadrotor&type=date&legend=top-left" />
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=sriram-2502/KoopmanMPC_Quadrotor&type=date&legend=top-left" />
  </picture>
